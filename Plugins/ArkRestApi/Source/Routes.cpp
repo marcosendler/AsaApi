@@ -125,12 +125,17 @@ namespace ArkRestApi::Routes
 
 			const FVector pos = AsaApi::IApiUtils::GetPosition(pc);
 
+			auto* playerState = static_cast<AShooterPlayerState*>(pc->PlayerStateField().Get());
+			const int level = playerState != nullptr ? playerState->GetCharacterLevel() : 0;
+
 			players.push_back({
 				{"playerId", AsaApi::IApiUtils::GetPlayerID(static_cast<AController*>(pc))},
 				{"steamName", AsaApi::IApiUtils::GetSteamName(pc).ToStringUTF8()},
 				{"characterName", AsaApi::IApiUtils::GetCharacterName(pc).ToStringUTF8()},
 				{"eosId", eosId.ToStringUTF8()},
+				{"level", level},
 				{"tribeId", AsaApi::IApiUtils::GetTribeID(pc)},
+				{"tribeName", pc->GetTribeName().ToStringUTF8()},
 				{"ip", AsaApi::IApiUtils::GetIPAddress(pc).ToStringUTF8()},
 				{"isDead", AsaApi::IApiUtils::IsPlayerDead(pc)},
 				{"position", {{"x", pos.X}, {"y", pos.Y}, {"z", pos.Z}}}
@@ -296,6 +301,116 @@ namespace ArkRestApi::Routes
 		return {{"success", true}};
 	}
 
+	nlohmann::json GiveItem(const nlohmann::json& body)
+	{
+		if (!body.contains("blueprint") || !body["blueprint"].is_string())
+		{
+			throw RestApiError(400, "blueprint is required");
+		}
+
+		AShooterPlayerController* pc = ResolvePlayer(body);
+		FString blueprint = FString::FromStringUTF8(body["blueprint"].get<std::string>());
+		const int quantity = body.value("quantity", 1);
+		const float quality = body.value("quality", 0.0f);
+		const bool forceBlueprint = body.value("forceBlueprint", false);
+		const bool autoEquip = body.value("autoEquip", false);
+		const float minRandomQuality = body.value("minRandomQuality", 0.0f);
+
+		const bool success = pc->GiveItem(&blueprint, quantity, quality, forceBlueprint, autoEquip, minRandomQuality);
+		if (!success)
+		{
+			throw RestApiError(500, "Failed to give item - check the blueprint path");
+		}
+
+		return {{"success", true}};
+	}
+
+	nlohmann::json GiveEngrams(const nlohmann::json& body)
+	{
+		AShooterPlayerController* pc = ResolvePlayer(body);
+		const bool forceAll = body.value("forceAll", true);
+		const bool tekOnly = body.value("tekOnly", false);
+
+		pc->GiveEngrams(forceAll, tekOnly);
+		return {{"success", true}};
+	}
+
+	nlohmann::json GiveExperience(const nlohmann::json& body)
+	{
+		if (!body.contains("amount"))
+		{
+			throw RestApiError(400, "amount is required");
+		}
+
+		AShooterPlayerController* pc = ResolvePlayer(body);
+		UShooterCheatManager* cheatManager = AsaApi::IApiUtils::GetCheatManagerByPC(pc);
+		if (cheatManager == nullptr)
+		{
+			throw RestApiError(500, "Player has no cheat manager available");
+		}
+
+		const uint64 playerId = AsaApi::IApiUtils::GetPlayerID(static_cast<AController*>(pc));
+		const float amount = body.at("amount").get<float>();
+		const bool fromTribeShare = body.value("fromTribeShare", false);
+		const bool preventSharingWithTribe = body.value("preventSharingWithTribe", false);
+
+		cheatManager->GiveExpToPlayer(static_cast<__int64>(playerId), amount, fromTribeShare, preventSharingWithTribe);
+		return {{"success", true}};
+	}
+
+	nlohmann::json SetPlayerLevel(const nlohmann::json& body)
+	{
+		if (!body.contains("level"))
+		{
+			throw RestApiError(400, "level is required");
+		}
+
+		AShooterPlayerController* pc = ResolvePlayer(body);
+		UShooterCheatManager* cheatManager = AsaApi::IApiUtils::GetCheatManagerByPC(pc);
+		if (cheatManager == nullptr)
+		{
+			throw RestApiError(500, "Player has no cheat manager available");
+		}
+
+		const uint64 playerId = AsaApi::IApiUtils::GetPlayerID(static_cast<AController*>(pc));
+		const __int16 level = static_cast<__int16>(body.at("level").get<int>());
+
+		cheatManager->SetPlayerLevel(static_cast<__int64>(playerId), level);
+		return {{"success", true}};
+	}
+
+	nlohmann::json ClearInventory(const nlohmann::json& body)
+	{
+		AShooterPlayerController* pc = ResolvePlayer(body);
+		UShooterCheatManager* cheatManager = AsaApi::IApiUtils::GetCheatManagerByPC(pc);
+		if (cheatManager == nullptr)
+		{
+			throw RestApiError(500, "Player has no cheat manager available");
+		}
+
+		const uint64 playerId = AsaApi::IApiUtils::GetPlayerID(static_cast<AController*>(pc));
+		const bool clearInventory = body.value("clearInventory", true);
+		const bool clearSlotItems = body.value("clearSlotItems", true);
+		const bool clearEquippedItems = body.value("clearEquippedItems", true);
+
+		cheatManager->ClearPlayerInventory(static_cast<int>(playerId), clearInventory, clearSlotItems,
+			clearEquippedItems);
+		return {{"success", true}};
+	}
+
+	nlohmann::json ToggleGodMode(const nlohmann::json& body)
+	{
+		AShooterPlayerController* pc = ResolvePlayer(body);
+		UShooterCheatManager* cheatManager = AsaApi::IApiUtils::GetCheatManagerByPC(pc);
+		if (cheatManager == nullptr)
+		{
+			throw RestApiError(500, "Player has no cheat manager available");
+		}
+
+		cheatManager->God();
+		return {{"success", true}, {"note", "God mode toggled - calling this again switches it back off"}};
+	}
+
 	nlohmann::json GetInventoryCount(const std::string& playerKey, const std::string& itemName)
 	{
 		if (itemName.empty())
@@ -323,12 +438,45 @@ namespace ArkRestApi::Routes
 			throw RestApiError(404, "Player not found by steamName: " + playerKey);
 		}
 
-		return {{"tribeId", AsaApi::IApiUtils::GetTribeID(pc)}};
+		return {
+			{"tribeId", AsaApi::IApiUtils::GetTribeID(pc)},
+			{"tribeName", pc->GetTribeName().ToStringUTF8()}
+		};
 	}
 
 	nlohmann::json SaveWorld()
 	{
 		AsaApi::GetApiUtils().GetShooterGameMode()->SaveWorld(true, true, false);
+		return {{"success", true}};
+	}
+
+	nlohmann::json DestroyAllEnemies()
+	{
+		UShooterCheatManager* cheatManager = AsaApi::GetApiUtils().GetCheatManager();
+		if (cheatManager == nullptr)
+		{
+			throw RestApiError(500, "No cheat manager available");
+		}
+
+		cheatManager->DestroyAllEnemies();
+		return {{"success", true}};
+	}
+
+	nlohmann::json SetTimeOfDay(const nlohmann::json& body)
+	{
+		if (!body.contains("time") || !body["time"].is_string())
+		{
+			throw RestApiError(400, "time is required, e.g. \"1200\"");
+		}
+
+		UShooterCheatManager* cheatManager = AsaApi::GetApiUtils().GetCheatManager();
+		if (cheatManager == nullptr)
+		{
+			throw RestApiError(500, "No cheat manager available");
+		}
+
+		FString time = FString::FromStringUTF8(body["time"].get<std::string>());
+		cheatManager->SetTimeOfDay(&time);
 		return {{"success", true}};
 	}
 } // namespace ArkRestApi::Routes

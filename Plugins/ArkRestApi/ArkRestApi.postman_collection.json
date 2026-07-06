@@ -229,6 +229,124 @@
 			}
 		},
 		{
+			"name": "Give Item",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"blueprint\": \"Blueprint'/Game/PrimalEarth/CoreBlueprints/Items/Armor/Riot/PrimalItemArmor_RiotPants.PrimalItemArmor_RiotPants_C'\",\n  \"quantity\": 1,\n  \"quality\": 0,\n  \"forceBlueprint\": false,\n  \"autoEquip\": false,\n  \"minRandomQuality\": 0\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/players/give-item",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "players", "give-item"]
+				}
+			},
+			"response": [],
+			"description": "Gives the item directly into the player's inventory (unlike spawn/item, which drops it on the ground)."
+		},
+		{
+			"name": "Give Engrams",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"forceAll\": true,\n  \"tekOnly\": false\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/players/give-engrams",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "players", "give-engrams"]
+				}
+			}
+		},
+		{
+			"name": "Give Experience",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"amount\": 1000,\n  \"fromTribeShare\": false,\n  \"preventSharingWithTribe\": false\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/players/give-exp",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "players", "give-exp"]
+				}
+			}
+		},
+		{
+			"name": "Set Player Level",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"level\": 100\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/players/set-level",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "players", "set-level"]
+				}
+			}
+		},
+		{
+			"name": "Clear Inventory",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"clearInventory\": true,\n  \"clearSlotItems\": true,\n  \"clearEquippedItems\": true\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/players/clear-inventory",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "players", "clear-inventory"]
+				}
+			}
+		},
+		{
+			"name": "Toggle God Mode",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"steamName\": \"{{steamName}}\"\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/players/god",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "players", "god"]
+				}
+			},
+			"response": [],
+			"description": "Toggle - calling this again switches God Mode back off."
+		},
+		{
 			"name": "Inventory Count",
 			"request": {
 				"method": "GET",
@@ -264,6 +382,39 @@
 					"raw": "{{baseUrl}}/api/v1/world/save",
 					"host": ["{{baseUrl}}"],
 					"path": ["api", "v1", "world", "save"]
+				}
+			}
+		},
+		{
+			"name": "Destroy All Enemies",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/world/destroy-all-enemies",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "world", "destroy-all-enemies"]
+				}
+			},
+			"response": [],
+			"description": "Destructive, global action: destroys all wild/hostile dinos on the map."
+		},
+		{
+			"name": "Set Time Of Day",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"time\": \"1200\"\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/world/time",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "world", "time"]
 				}
 			}
 		}

@@ -24,9 +24,18 @@ namespace ArkRestApi::Routes
 
 	nlohmann::json SpawnDino(const nlohmann::json& body);
 	nlohmann::json SpawnItem(const nlohmann::json& body);
+	nlohmann::json GiveItem(const nlohmann::json& body);
+
+	nlohmann::json GiveEngrams(const nlohmann::json& body);
+	nlohmann::json GiveExperience(const nlohmann::json& body);
+	nlohmann::json SetPlayerLevel(const nlohmann::json& body);
+	nlohmann::json ClearInventory(const nlohmann::json& body);
+	nlohmann::json ToggleGodMode(const nlohmann::json& body);
 
 	nlohmann::json GetInventoryCount(const std::string& playerKey, const std::string& itemName);
 	nlohmann::json GetTribeId(const std::string& playerKey);
 
 	nlohmann::json SaveWorld();
+	nlohmann::json DestroyAllEnemies();
+	nlohmann::json SetTimeOfDay(const nlohmann::json& body);
 } // namespace ArkRestApi::Routes

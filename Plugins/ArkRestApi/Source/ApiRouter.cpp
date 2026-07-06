@@ -128,9 +128,49 @@ namespace ArkRestApi
 			return RunOnGameThread([body] { return Routes::SpawnItem(body); }, maxQueueWaitMs);
 		}
 
+		if (method == "POST" && path == "/api/v1/players/give-item")
+		{
+			return RunOnGameThread([body] { return Routes::GiveItem(body); }, maxQueueWaitMs);
+		}
+
+		if (method == "POST" && path == "/api/v1/players/give-engrams")
+		{
+			return RunOnGameThread([body] { return Routes::GiveEngrams(body); }, maxQueueWaitMs);
+		}
+
+		if (method == "POST" && path == "/api/v1/players/give-exp")
+		{
+			return RunOnGameThread([body] { return Routes::GiveExperience(body); }, maxQueueWaitMs);
+		}
+
+		if (method == "POST" && path == "/api/v1/players/set-level")
+		{
+			return RunOnGameThread([body] { return Routes::SetPlayerLevel(body); }, maxQueueWaitMs);
+		}
+
+		if (method == "POST" && path == "/api/v1/players/clear-inventory")
+		{
+			return RunOnGameThread([body] { return Routes::ClearInventory(body); }, maxQueueWaitMs);
+		}
+
+		if (method == "POST" && path == "/api/v1/players/god")
+		{
+			return RunOnGameThread([body] { return Routes::ToggleGodMode(body); }, maxQueueWaitMs);
+		}
+
 		if (method == "POST" && path == "/api/v1/world/save")
 		{
 			return RunOnGameThread([] { return Routes::SaveWorld(); }, maxQueueWaitMs);
+		}
+
+		if (method == "POST" && path == "/api/v1/world/destroy-all-enemies")
+		{
+			return RunOnGameThread([] { return Routes::DestroyAllEnemies(); }, maxQueueWaitMs);
+		}
+
+		if (method == "POST" && path == "/api/v1/world/time")
+		{
+			return RunOnGameThread([body] { return Routes::SetTimeOfDay(body); }, maxQueueWaitMs);
 		}
 
 		if (method == "GET" && std::regex_match(path, match, kInventoryCountPattern))

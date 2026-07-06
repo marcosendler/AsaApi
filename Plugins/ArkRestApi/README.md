@@ -49,7 +49,7 @@ All bodies/responses are JSON. Player selectors (`kick`, `ban` aside) accept **o
 |---|---|---|---|
 | GET | `/health` | - | No auth. Liveness check. |
 | GET | `/api/v1/status` | - | Server status + online player count. |
-| GET | `/api/v1/players` | - | List of online players. |
+| GET | `/api/v1/players` | - | List of online players, each with `playerId`, `steamName`, `characterName`, `eosId`, `level`, `tribeId`, `tribeName`, `ip`, `isDead`, `position`. |
 | POST | `/api/v1/players/kick` | `{"steamName":"..."}` or `{"playerId":..., "reason":"..."}` | |
 | POST | `/api/v1/players/ban` | `{"steamName":"...", "durationMinutes":0}` | `durationMinutes: 0` = permanent. |
 | POST | `/api/v1/broadcast` | `{"message":"...", "alsoChat":false}` | Server message to all; `alsoChat` also sends as chat. |
@@ -57,10 +57,18 @@ All bodies/responses are JSON. Player selectors (`kick`, `ban` aside) accept **o
 | POST | `/api/v1/players/teleport` | `{"steamName":"...", "x":0,"y":0,"z":0}` | |
 | POST | `/api/v1/players/teleport-to-player` | `{"from":{"steamName":"a"},"to":{"steamName":"b"},"checkForDino":true,"maxDistance":-1}` | |
 | POST | `/api/v1/spawn/dino` | `{"blueprint":"Blueprint'/Game/.../Dino_C'","nearPlayer":{"steamName":"..."},"level":1,"forceTame":false}` | `x/y/z` instead of `nearPlayer` to spawn at coords. |
-| POST | `/api/v1/spawn/item` | `{"blueprint":"...","x":0,"y":0,"z":0,"amount":1,"quality":0}` | |
+| POST | `/api/v1/spawn/item` | `{"blueprint":"...","x":0,"y":0,"z":0,"amount":1,"quality":0}` | Drops the item on the ground near the coords. |
+| POST | `/api/v1/players/give-item` | `{"steamName":"...","blueprint":"...","quantity":1,"quality":0,"autoEquip":false}` | Gives the item directly into the player's inventory. |
+| POST | `/api/v1/players/give-engrams` | `{"steamName":"...","forceAll":true,"tekOnly":false}` | Unlocks engrams for the player. |
+| POST | `/api/v1/players/give-exp` | `{"steamName":"...","amount":1000,"fromTribeShare":false,"preventSharingWithTribe":false}` | |
+| POST | `/api/v1/players/set-level` | `{"steamName":"...","level":100}` | Sets the player's level directly. |
+| POST | `/api/v1/players/clear-inventory` | `{"steamName":"...","clearInventory":true,"clearSlotItems":true,"clearEquippedItems":true}` | |
+| POST | `/api/v1/players/god` | `{"steamName":"..."}` | **Toggle** — calling it again turns God Mode back off. |
 | GET | `/api/v1/players/{steamName}/inventory-count?item=ItemName` | - | |
-| GET | `/api/v1/players/{steamName}/tribe` | - | |
+| GET | `/api/v1/players/{steamName}/tribe` | - | Returns `tribeId` and `tribeName`. |
 | POST | `/api/v1/world/save` | - | |
+| POST | `/api/v1/world/destroy-all-enemies` | - | Destroys all wild/hostile dinos on the map. Destructive, global action. |
+| POST | `/api/v1/world/time` | `{"time":"1200"}` | Sets the map's time of day. |
 
 ## Examples
 

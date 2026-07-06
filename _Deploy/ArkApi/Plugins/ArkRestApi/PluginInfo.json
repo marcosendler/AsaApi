@@ -1,0 +1,8 @@
+{
+  "FullName": "Ark Rest Api",
+  "Description": "Exposes AsaApi/game server actions over an HTTP REST API secured with a Bearer token.",
+  "Version": 1.00,
+  "MinApiVersion": 0,
+  "Dependencies": [],
+  "PreventUnloading": false
+}
