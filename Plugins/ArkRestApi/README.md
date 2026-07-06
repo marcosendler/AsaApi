@@ -54,6 +54,7 @@ All bodies/responses are JSON. Player selectors (`kick`, `ban` aside) accept **o
 | POST | `/api/v1/players/ban` | `{"steamName":"...", "durationMinutes":0}` | `durationMinutes: 0` = permanent. |
 | POST | `/api/v1/broadcast` | `{"message":"...", "alsoChat":false}` | Server message to all; `alsoChat` also sends as chat. |
 | POST | `/api/v1/players/message` | `{"steamName":"...", "message":"...", "senderName":"Server"}` | Chat message to one player. |
+| POST | `/api/v1/players/notify` | `{"steamName":"...", "message":"...", "displayScale":1.3, "displayTime":5, "colorR":1,"colorG":1,"colorB":1,"colorA":1}` | On-screen notification (harder to miss than a chat line). |
 | POST | `/api/v1/players/teleport` | `{"steamName":"...", "x":0,"y":0,"z":0}` | |
 | POST | `/api/v1/players/teleport-to-player` | `{"from":{"steamName":"a"},"to":{"steamName":"b"},"checkForDino":true,"maxDistance":-1}` | |
 | POST | `/api/v1/spawn/dino` | `{"blueprint":"Blueprint'/Game/.../Dino_C'","nearPlayer":{"steamName":"..."},"level":1,"forceTame":false}` | `x/y/z` instead of `nearPlayer` to spawn at coords. |

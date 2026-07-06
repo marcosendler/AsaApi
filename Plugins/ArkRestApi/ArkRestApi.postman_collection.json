@@ -151,6 +151,27 @@
 			}
 		},
 		{
+			"name": "Notify Player",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"message\": \"Welcome! Register on Discord to claim your items.\",\n  \"displayScale\": 1.3,\n  \"displayTime\": 5,\n  \"colorR\": 1,\n  \"colorG\": 1,\n  \"colorB\": 1,\n  \"colorA\": 1\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/players/notify",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "players", "notify"]
+				}
+			},
+			"response": [],
+			"description": "On-screen notification (harder to miss than a chat line)."
+		},
+		{
 			"name": "Teleport To Position",
 			"request": {
 				"method": "POST",

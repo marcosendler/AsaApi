@@ -211,6 +211,29 @@ namespace ArkRestApi::Routes
 		return {{"success", true}};
 	}
 
+	nlohmann::json NotifyPlayer(const nlohmann::json& body)
+	{
+		if (!body.contains("message") || !body["message"].is_string())
+		{
+			throw RestApiError(400, "message is required");
+		}
+
+		AShooterPlayerController* pc = ResolvePlayer(body);
+		const std::wstring message = AsaApi::Tools::Utf8Decode(EscapeFmtBraces(body["message"].get<std::string>()));
+
+		const FLinearColor color{
+			body.value("colorR", 1.0f),
+			body.value("colorG", 1.0f),
+			body.value("colorB", 1.0f),
+			body.value("colorA", 1.0f)
+		};
+		const float displayScale = body.value("displayScale", 1.3f);
+		const float displayTime = body.value("displayTime", 5.0f);
+
+		AsaApi::GetApiUtils().SendNotification(pc, color, displayScale, displayTime, nullptr, message.c_str());
+		return {{"success", true}};
+	}
+
 	nlohmann::json TeleportToPosition(const nlohmann::json& body)
 	{
 		AShooterPlayerController* pc = ResolvePlayer(body);

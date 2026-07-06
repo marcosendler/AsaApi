@@ -18,6 +18,7 @@ namespace ArkRestApi::Routes
 
 	nlohmann::json Broadcast(const nlohmann::json& body);
 	nlohmann::json MessagePlayer(const nlohmann::json& body);
+	nlohmann::json NotifyPlayer(const nlohmann::json& body);
 
 	nlohmann::json TeleportToPosition(const nlohmann::json& body);
 	nlohmann::json TeleportToPlayer(const nlohmann::json& body);

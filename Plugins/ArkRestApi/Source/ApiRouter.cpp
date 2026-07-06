@@ -108,6 +108,11 @@ namespace ArkRestApi
 			return RunOnGameThread([body] { return Routes::MessagePlayer(body); }, maxQueueWaitMs);
 		}
 
+		if (method == "POST" && path == "/api/v1/players/notify")
+		{
+			return RunOnGameThread([body] { return Routes::NotifyPlayer(body); }, maxQueueWaitMs);
+		}
+
 		if (method == "POST" && path == "/api/v1/players/teleport")
 		{
 			return RunOnGameThread([body] { return Routes::TeleportToPosition(body); }, maxQueueWaitMs);
