@@ -1,0 +1,271 @@
+{
+	"info": {
+		"_postman_id": "b6f2a1d4-8e3c-4b7a-9c1d-4f5a6b7c8d9e",
+		"name": "ArkRestApi",
+		"description": "REST API exposed by the ArkRestApi AsaApi plugin. All routes except /health require a Bearer token (set the `bearerToken` collection variable).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{bearerToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://127.0.0.1:8766",
+			"type": "string"
+		},
+		{
+			"key": "bearerToken",
+			"value": "CHANGE_ME_TO_A_LONG_RANDOM_SECRET",
+			"type": "string"
+		},
+		{
+			"key": "steamName",
+			"value": "SomePlayer",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Health",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/health",
+					"host": ["{{baseUrl}}"],
+					"path": ["health"]
+				}
+			}
+		},
+		{
+			"name": "Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/status",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "status"]
+				}
+			}
+		},
+		{
+			"name": "List Players",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/players",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "players"]
+				}
+			}
+		},
+		{
+			"name": "Kick Player",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"reason\": \"Kicked via REST API\"\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/players/kick",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "players", "kick"]
+				}
+			}
+		},
+		{
+			"name": "Ban Player",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"durationMinutes\": 0\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/players/ban",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "players", "ban"]
+				}
+			},
+			"response": [],
+			"description": "durationMinutes: 0 = permanent ban."
+		},
+		{
+			"name": "Broadcast",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"message\": \"Server restarting in 10 minutes\",\n  \"alsoChat\": false\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/broadcast",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "broadcast"]
+				}
+			}
+		},
+		{
+			"name": "Message Player",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"message\": \"Hello from the REST API\",\n  \"senderName\": \"Server\"\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/players/message",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "players", "message"]
+				}
+			}
+		},
+		{
+			"name": "Teleport To Position",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"x\": 0,\n  \"y\": 0,\n  \"z\": 0\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/players/teleport",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "players", "teleport"]
+				}
+			}
+		},
+		{
+			"name": "Teleport To Player",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"from\": { \"steamName\": \"{{steamName}}\" },\n  \"to\": { \"steamName\": \"OtherPlayer\" },\n  \"checkForDino\": true,\n  \"maxDistance\": -1\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/players/teleport-to-player",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "players", "teleport-to-player"]
+				}
+			}
+		},
+		{
+			"name": "Spawn Dino",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"blueprint\": \"Blueprint'/Game/PrimalEarth/Dinos/Rex/Rex_Character_BP.Rex_Character_BP'\",\n  \"nearPlayer\": { \"steamName\": \"{{steamName}}\" },\n  \"level\": 30,\n  \"forceTame\": true,\n  \"neutered\": false\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/spawn/dino",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "spawn", "dino"]
+				}
+			},
+			"response": [],
+			"description": "Use `x`/`y`/`z` instead of `nearPlayer` to spawn at fixed coordinates."
+		},
+		{
+			"name": "Spawn Item",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"blueprint\": \"Blueprint'/Game/PrimalEarth/CoreBlueprints/Items/Armor/Riot/PrimalItemArmor_RiotPants.PrimalItemArmor_RiotPants_C'\",\n  \"x\": 0,\n  \"y\": 0,\n  \"z\": 0,\n  \"amount\": 1,\n  \"quality\": 0,\n  \"forceBlueprint\": false\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/spawn/item",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "spawn", "item"]
+				}
+			}
+		},
+		{
+			"name": "Inventory Count",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/players/{{steamName}}/inventory-count?item=Metal Ingot",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "players", "{{steamName}}", "inventory-count"],
+					"query": [
+						{ "key": "item", "value": "Metal Ingot" }
+					]
+				}
+			}
+		},
+		{
+			"name": "Get Tribe Id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/players/{{steamName}}/tribe",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "players", "{{steamName}}", "tribe"]
+				}
+			}
+		},
+		{
+			"name": "Save World",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/world/save",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "world", "save"]
+				}
+			}
+		}
+	]
+}

@@ -1,0 +1,8 @@
+{
+  "Enabled": true,
+  "BindAddress": "0.0.0.0",
+  "Port": 8766,
+  "BearerToken": "CHANGE_ME_TO_A_LONG_RANDOM_SECRET",
+  "MaxQueueWaitMs": 5000,
+  "MaxThreads": 8
+}

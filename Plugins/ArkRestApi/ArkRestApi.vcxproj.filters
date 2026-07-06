@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{4a1b8b7e-1c2d-4e3f-9a5b-6c7d8e9f0a1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{5b2c9c8f-2d3e-4f4a-8b6c-7d8e9f0a1b2c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\ApiRouter.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GameThreadDispatcher.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\HttpServer.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\PluginMain.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Routes.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\ApiRouter.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\GameThreadDispatcher.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\HttpServer.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RestApiConfig.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RestApiError.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Routes.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="PluginInfo.json">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="config.json">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="vcpkg.json">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="vcpkg-configuration.json">
+      <Filter>Resources</Filter>
+    </None>
+  </ItemGroup>
+</Project>
