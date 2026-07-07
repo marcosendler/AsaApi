@@ -340,6 +340,8 @@ namespace ArkRestApi::Routes
 		// Cryopod-ing a dino erases the "ride/use without a saddle" bypass that forceTame
 		// grants (documented ARK behavior) - a forceTame'd dino redeployed from a cryopod
 		// loses inventory access unless it genuinely has a saddle equipped before capture.
+		// Equip it directly on the live dino (rather than as a loose item) so the capture
+		// below picks it up as part of the dino's real current state.
 		if (body.contains("saddleBlueprint") && body["saddleBlueprint"].is_string())
 		{
 			FString saddleBlueprint = FString::FromStringUTF8(body["saddleBlueprint"].get<std::string>());
@@ -352,7 +354,41 @@ namespace ArkRestApi::Routes
 			}
 		}
 
-		pc->GiveCryoItemAndCaptureDino(dino);
+		// AShooterPlayerController::GiveCryoItemAndCaptureDino is built for the normal
+		// player-aims-a-real-cryopod-at-a-dino interaction flow and does not reliably
+		// preserve dino/saddle state when invoked directly from server-side code outside
+		// that flow. Instead, build the cryopod item by hand the same way established
+		// ARK plugins (e.g. ArkShop's GiveDinosInCryopods) do it: create an empty cryopod
+		// item, read the dino's current state into a FCustomItemData snapshot, attach that
+		// snapshot to the item, hand the item to the player, then remove the live dino.
+		const FString kCryopodBlueprint = FString::FromStringUTF8(
+			"Blueprint'/Game/Extinction/CoreBlueprints/Weapons/PrimalItem_WeaponEmptyCryopod."
+			"PrimalItem_WeaponEmptyCryopod_C'");
+
+		TSubclassOf<UPrimalItem> cryopodArchetype;
+		cryopodArchetype.uClass = UVictoryCore::BPLoadClass(kCryopodBlueprint);
+		if (cryopodArchetype.uClass == nullptr)
+		{
+			throw RestApiError(500, "Failed to load the empty cryopod blueprint");
+		}
+
+		UPrimalItem* cryopodItem = UPrimalItem::AddNewItem(cryopodArchetype, nullptr, false, false, 0.0f, false, 1,
+			false, 0, false, nullptr, 0, 0, 0, true, false, false);
+		if (cryopodItem == nullptr)
+		{
+			throw RestApiError(500, "Failed to create the cryopod item");
+		}
+
+		FCustomItemData cryoData;
+		if (UVictoryCore::GetCryoDinoData(&cryoData, pc, dino) == nullptr)
+		{
+			throw RestApiError(500, "Failed to capture the dino into the cryopod");
+		}
+
+		cryopodItem->SetCustomItemData(&cryoData);
+		pc->GetPlayerInventoryComponent()->AddItemObject(cryopodItem);
+
+		dino->Destroy(true, false);
 		return {{"success", true}};
 	}
 
