@@ -337,6 +337,21 @@ namespace ArkRestApi::Routes
 			dino->hasAlreadySetGender() = true;
 		}
 
+		// Cryopod-ing a dino erases the "ride/use without a saddle" bypass that forceTame
+		// grants (documented ARK behavior) - a forceTame'd dino redeployed from a cryopod
+		// loses inventory access unless it genuinely has a saddle equipped before capture.
+		if (body.contains("saddleBlueprint") && body["saddleBlueprint"].is_string())
+		{
+			FString saddleBlueprint = FString::FromStringUTF8(body["saddleBlueprint"].get<std::string>());
+			const float saddleQuality = body.value("saddleQuality", 0.0f);
+
+			UPrimalItem* saddle = dino->GiveSaddleFromString(&saddleBlueprint, saddleQuality, 0.0f, true);
+			if (saddle == nullptr)
+			{
+				throw RestApiError(500, "Failed to equip saddle - check the saddleBlueprint path");
+			}
+		}
+
 		pc->GiveCryoItemAndCaptureDino(dino);
 		return {{"success", true}};
 	}

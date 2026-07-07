@@ -239,7 +239,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"blueprint\": \"Blueprint'/Game/PrimalEarth/Dinos/Argentavis/Argent_Character_BP.Argent_Character_BP'\",\n  \"level\": 150,\n  \"forceTame\": true,\n  \"neutered\": true,\n  \"gender\": \"male\"\n}",
+					"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"blueprint\": \"Blueprint'/Game/PrimalEarth/Dinos/Argentavis/Argent_Character_BP.Argent_Character_BP'\",\n  \"level\": 150,\n  \"forceTame\": true,\n  \"neutered\": true,\n  \"gender\": \"male\",\n  \"saddleBlueprint\": \"Blueprint'/Game/PrimalEarth/CoreBlueprints/Items/Armor/Saddles/PrimalItemArmor_ArgentavisSaddle.PrimalItemArmor_ArgentavisSaddle_C'\",\n  \"saddleQuality\": 0\n}",
 					"options": { "raw": { "language": "json" } }
 				},
 				"url": {
@@ -249,7 +249,7 @@
 				}
 			},
 			"response": [],
-			"description": "Spawns the dino and immediately captures it into a cryopod delivered straight into the player's inventory. `gender` is optional (\"male\"/\"female\")."
+			"description": "Spawns the dino and immediately captures it into a cryopod delivered straight into the player's inventory. `gender` is optional (\"male\"/\"female\"). `saddleBlueprint` is strongly recommended - cryopod-ing erases the forceTame no-saddle-needed bypass, so without a real saddle equipped before capture the dino comes out with no inventory/riding access."
 		},
 		{
 			"name": "Spawn Item",
