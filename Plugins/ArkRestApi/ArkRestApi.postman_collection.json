@@ -292,6 +292,27 @@
 			"description": "Gives the item directly into the player's inventory (unlike spawn/item, which drops it on the ground)."
 		},
 		{
+			"name": "Give Items (batch)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"items\": [\n    { \"blueprint\": \"Blueprint'/Game/PrimalEarth/CoreBlueprints/Items/Armor/Metal/PrimalItemArmor_MetalShirt.PrimalItemArmor_MetalShirt_C'\", \"quantity\": 1, \"quality\": 0 },\n    { \"blueprint\": \"Blueprint'/Game/PrimalEarth/CoreBlueprints/Items/Armor/Metal/PrimalItemArmor_MetalHelmet.PrimalItemArmor_MetalHelmet_C'\", \"quantity\": 1, \"quality\": 0 },\n    { \"blueprint\": \"Blueprint'/Game/PrimalEarth/CoreBlueprints/Weapons/PrimalItem_WeaponMetalPick.PrimalItem_WeaponMetalPick_C'\", \"quantity\": 1, \"quality\": 0 }\n  ]\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/players/give-items",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "players", "give-items"]
+				}
+			},
+			"response": [],
+			"description": "Batch version of Give Item - delivers a whole kit in one call. Returns {\"results\": [...]}, one entry per item, same order; a bad blueprint in one entry doesn't stop the rest."
+		},
+		{
 			"name": "Give Engrams",
 			"request": {
 				"method": "POST",

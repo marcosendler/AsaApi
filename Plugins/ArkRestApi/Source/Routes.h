@@ -27,6 +27,7 @@ namespace ArkRestApi::Routes
 	nlohmann::json SpawnDinoAsCryopod(const nlohmann::json& body);
 	nlohmann::json SpawnItem(const nlohmann::json& body);
 	nlohmann::json GiveItem(const nlohmann::json& body);
+	nlohmann::json GiveItems(const nlohmann::json& body);
 
 	nlohmann::json GiveEngrams(const nlohmann::json& body);
 	nlohmann::json GiveExperience(const nlohmann::json& body);

@@ -143,6 +143,11 @@ namespace ArkRestApi
 			return RunOnGameThread([body] { return Routes::GiveItem(body); }, maxQueueWaitMs);
 		}
 
+		if (method == "POST" && path == "/api/v1/players/give-items")
+		{
+			return RunOnGameThread([body] { return Routes::GiveItems(body); }, maxQueueWaitMs);
+		}
+
 		if (method == "POST" && path == "/api/v1/players/give-engrams")
 		{
 			return RunOnGameThread([body] { return Routes::GiveEngrams(body); }, maxQueueWaitMs);

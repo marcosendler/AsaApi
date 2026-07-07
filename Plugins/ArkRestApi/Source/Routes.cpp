@@ -389,6 +389,41 @@ namespace ArkRestApi::Routes
 		return {{"success", true}};
 	}
 
+	nlohmann::json GiveItems(const nlohmann::json& body)
+	{
+		if (!body.contains("items") || !body["items"].is_array() || body["items"].empty())
+		{
+			throw RestApiError(400, "items must be a non-empty array");
+		}
+
+		AShooterPlayerController* pc = ResolvePlayer(body);
+
+		nlohmann::json results = nlohmann::json::array();
+		for (const auto& item : body["items"])
+		{
+			if (!item.contains("blueprint") || !item["blueprint"].is_string())
+			{
+				results.push_back({{"success", false}, {"error", "blueprint is required"}});
+				continue;
+			}
+
+			FString blueprint = FString::FromStringUTF8(item["blueprint"].get<std::string>());
+			const int quantity = item.value("quantity", 1);
+			const float quality = item.value("quality", 0.0f);
+			const bool forceBlueprint = item.value("forceBlueprint", false);
+			const bool autoEquip = item.value("autoEquip", false);
+			const float minRandomQuality = item.value("minRandomQuality", 0.0f);
+
+			const bool success =
+				pc->GiveItem(&blueprint, quantity, quality, forceBlueprint, autoEquip, minRandomQuality);
+			results.push_back(success
+				? nlohmann::json{{"success", true}}
+				: nlohmann::json{{"success", false}, {"error", "Failed to give item - check the blueprint path"}});
+		}
+
+		return {{"results", results}};
+	}
+
 	nlohmann::json GiveEngrams(const nlohmann::json& body)
 	{
 		AShooterPlayerController* pc = ResolvePlayer(body);
