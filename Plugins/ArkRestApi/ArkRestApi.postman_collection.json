@@ -231,6 +231,27 @@
 			"description": "Use `x`/`y`/`z` instead of `nearPlayer` to spawn at fixed coordinates."
 		},
 		{
+			"name": "Spawn Dino As Cryopod",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"blueprint\": \"Blueprint'/Game/PrimalEarth/Dinos/Argentavis/Argent_Character_BP.Argent_Character_BP'\",\n  \"level\": 150,\n  \"forceTame\": true,\n  \"neutered\": true,\n  \"gender\": \"male\"\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/spawn/dino-cryopod",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "spawn", "dino-cryopod"]
+				}
+			},
+			"response": [],
+			"description": "Spawns the dino and immediately captures it into a cryopod delivered straight into the player's inventory. `gender` is optional (\"male\"/\"female\")."
+		},
+		{
 			"name": "Spawn Item",
 			"request": {
 				"method": "POST",

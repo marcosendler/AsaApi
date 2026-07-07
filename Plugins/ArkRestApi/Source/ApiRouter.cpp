@@ -128,6 +128,11 @@ namespace ArkRestApi
 			return RunOnGameThread([body] { return Routes::SpawnDino(body); }, maxQueueWaitMs);
 		}
 
+		if (method == "POST" && path == "/api/v1/spawn/dino-cryopod")
+		{
+			return RunOnGameThread([body] { return Routes::SpawnDinoAsCryopod(body); }, maxQueueWaitMs);
+		}
+
 		if (method == "POST" && path == "/api/v1/spawn/item")
 		{
 			return RunOnGameThread([body] { return Routes::SpawnItem(body); }, maxQueueWaitMs);

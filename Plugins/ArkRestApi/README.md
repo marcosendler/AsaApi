@@ -58,6 +58,7 @@ All bodies/responses are JSON. Player selectors (`kick`, `ban` aside) accept **o
 | POST | `/api/v1/players/teleport` | `{"steamName":"...", "x":0,"y":0,"z":0}` | |
 | POST | `/api/v1/players/teleport-to-player` | `{"from":{"steamName":"a"},"to":{"steamName":"b"},"checkForDino":true,"maxDistance":-1}` | |
 | POST | `/api/v1/spawn/dino` | `{"blueprint":"Blueprint'/Game/.../Dino_C'","nearPlayer":{"steamName":"..."},"level":1,"forceTame":false}` | `x/y/z` instead of `nearPlayer` to spawn at coords. |
+| POST | `/api/v1/spawn/dino-cryopod` | `{"steamName":"...","blueprint":"Blueprint'/Game/.../Dino_C'","level":1,"forceTame":true,"neutered":false,"gender":"male"}` | Spawns the dino and immediately captures it into a cryopod delivered straight into the player's inventory (no loose dino left in the world). `gender` is optional (`"male"`/`"female"`); omit to leave it at whatever the spawn rolled. |
 | POST | `/api/v1/spawn/item` | `{"blueprint":"...","x":0,"y":0,"z":0,"amount":1,"quality":0}` | Drops the item on the ground near the coords. |
 | POST | `/api/v1/players/give-item` | `{"steamName":"...","blueprint":"...","quantity":1,"quality":0,"autoEquip":false}` | Gives the item directly into the player's inventory. |
 | POST | `/api/v1/players/give-engrams` | `{"steamName":"...","forceAll":true,"tekOnly":false}` | Unlocks engrams for the player. |

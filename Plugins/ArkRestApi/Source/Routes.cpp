@@ -300,6 +300,47 @@ namespace ArkRestApi::Routes
 		return {{"success", true}};
 	}
 
+	nlohmann::json SpawnDinoAsCryopod(const nlohmann::json& body)
+	{
+		if (!body.contains("blueprint") || !body["blueprint"].is_string())
+		{
+			throw RestApiError(400, "blueprint is required");
+		}
+
+		// The dino is captured into a cryopod owned by this player, so (unlike SpawnDino)
+		// there's no free-standing "nearPlayer"/x,y,z placement - it's always spawned near
+		// the recipient and immediately packed into the item.
+		AShooterPlayerController* pc = ResolvePlayer(body);
+
+		FString blueprint = FString::FromStringUTF8(body["blueprint"].get<std::string>());
+		const int level = body.value("level", 1);
+		const bool forceTame = body.value("forceTame", true);
+		const bool neutered = body.value("neutered", false);
+
+		APrimalDinoCharacter* dino =
+			AsaApi::GetApiUtils().SpawnDino(pc, blueprint, nullptr, level, forceTame, neutered);
+		if (dino == nullptr)
+		{
+			throw RestApiError(500,
+				"Failed to spawn dino - check the blueprint path and that at least one player is online");
+		}
+
+		if (body.contains("gender") && body["gender"].is_string())
+		{
+			const std::string gender = body["gender"].get<std::string>();
+			if (gender != "male" && gender != "female")
+			{
+				throw RestApiError(400, "gender must be \"male\" or \"female\"");
+			}
+
+			dino->bIsFemale() = (gender == "female");
+			dino->hasAlreadySetGender() = true;
+		}
+
+		pc->GiveCryoItemAndCaptureDino(dino);
+		return {{"success", true}};
+	}
+
 	nlohmann::json SpawnItem(const nlohmann::json& body)
 	{
 		if (!body.contains("blueprint") || !body["blueprint"].is_string())
