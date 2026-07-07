@@ -1,5 +1,6 @@
 #include "ApiRouter.h"
 
+#include <optional>
 #include <regex>
 
 #include "GameThreadDispatcher.h"
@@ -34,6 +35,36 @@ namespace ArkRestApi
 			}
 
 			return result;
+		}
+
+		// Builds the same {steamName|eosId|playerId} selector shape Routes::ResolvePlayer expects
+		// for POST bodies, but from a path segment + query params on a GET request. Preferring
+		// playerId, then eosId, keeps the selector unambiguous even if the caller also passes a
+		// (possibly duplicate) name in the path; `playerKey` is only used as a steamName fallback
+		// when neither query param is present. Must be called from inside the game-thread lambda
+		// passed to RunOnGameThread, so a malformed playerId throws a RestApiError that's caught
+		// there instead of escaping onto the calling Poco thread.
+		nlohmann::json BuildPlayerSelector(const std::string& playerKey,
+			const std::optional<std::string>& playerIdParam, const std::optional<std::string>& eosIdParam)
+		{
+			if (playerIdParam.has_value())
+			{
+				try
+				{
+					return {{"playerId", std::stoull(*playerIdParam)}};
+				}
+				catch (const std::exception&)
+				{
+					throw RestApiError(400, "playerId query parameter must be a number");
+				}
+			}
+
+			if (eosIdParam.has_value())
+			{
+				return {{"eosId", *eosIdParam}};
+			}
+
+			return {{"steamName", playerKey}};
 		}
 
 		ApiResponse RunOnGameThread(std::function<nlohmann::json()> routeFn, int maxQueueWaitMs)
@@ -193,14 +224,35 @@ namespace ArkRestApi
 			const std::string playerKey = UrlDecode(match[1].str());
 			const auto queryIt = query.find("item");
 			const std::string itemName = queryIt != query.end() ? queryIt->second : std::string();
-			return RunOnGameThread([playerKey, itemName] { return Routes::GetInventoryCount(playerKey, itemName); },
-				maxQueueWaitMs);
+
+			const auto playerIdIt = query.find("playerId");
+			const auto eosIdIt = query.find("eosId");
+			const std::optional<std::string> playerIdParam =
+				playerIdIt != query.end() ? std::optional<std::string>(playerIdIt->second) : std::nullopt;
+			const std::optional<std::string> eosIdParam =
+				eosIdIt != query.end() ? std::optional<std::string>(eosIdIt->second) : std::nullopt;
+
+			return RunOnGameThread([playerKey, itemName, playerIdParam, eosIdParam]
+			{
+				return Routes::GetInventoryCount(BuildPlayerSelector(playerKey, playerIdParam, eosIdParam), itemName);
+			}, maxQueueWaitMs);
 		}
 
 		if (method == "GET" && std::regex_match(path, match, kTribePattern))
 		{
 			const std::string playerKey = UrlDecode(match[1].str());
-			return RunOnGameThread([playerKey] { return Routes::GetTribeId(playerKey); }, maxQueueWaitMs);
+
+			const auto playerIdIt = query.find("playerId");
+			const auto eosIdIt = query.find("eosId");
+			const std::optional<std::string> playerIdParam =
+				playerIdIt != query.end() ? std::optional<std::string>(playerIdIt->second) : std::nullopt;
+			const std::optional<std::string> eosIdParam =
+				eosIdIt != query.end() ? std::optional<std::string>(eosIdIt->second) : std::nullopt;
+
+			return RunOnGameThread([playerKey, playerIdParam, eosIdParam]
+			{
+				return Routes::GetTribeId(BuildPlayerSelector(playerKey, playerIdParam, eosIdParam));
+			}, maxQueueWaitMs);
 		}
 
 		return {404, {{"error", "Unknown route: " + method + " " + path}}};

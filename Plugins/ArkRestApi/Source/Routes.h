@@ -35,8 +35,10 @@ namespace ArkRestApi::Routes
 	nlohmann::json ClearInventory(const nlohmann::json& body);
 	nlohmann::json ToggleGodMode(const nlohmann::json& body);
 
-	nlohmann::json GetInventoryCount(const std::string& playerKey, const std::string& itemName);
-	nlohmann::json GetTribeId(const std::string& playerKey);
+	// playerSelector is a json object containing one of: steamName, eosId, playerId (same shape
+	// accepted in POST bodies elsewhere in this file).
+	nlohmann::json GetInventoryCount(const nlohmann::json& playerSelector, const std::string& itemName);
+	nlohmann::json GetTribeId(const nlohmann::json& playerSelector);
 
 	nlohmann::json SaveWorld();
 	nlohmann::json DestroyAllEnemies();

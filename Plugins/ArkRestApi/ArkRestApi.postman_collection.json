@@ -425,6 +425,24 @@
 			}
 		},
 		{
+			"name": "Inventory Count (by playerId)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/players/-/inventory-count?item=Metal Ingot&playerId=76561198012345678",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "players", "-", "inventory-count"],
+					"query": [
+						{ "key": "item", "value": "Metal Ingot" },
+						{ "key": "playerId", "value": "76561198012345678" }
+					]
+				}
+			},
+			"response": [],
+			"description": "The path segment (`-` here) is ignored once `playerId` (or `eosId`) is given as a query param - use this form to avoid ambiguity when two online players share the same name."
+		},
+		{
 			"name": "Get Tribe Id",
 			"request": {
 				"method": "GET",
@@ -435,6 +453,23 @@
 					"path": ["api", "v1", "players", "{{steamName}}", "tribe"]
 				}
 			}
+		},
+		{
+			"name": "Get Tribe Id (by eosId)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/players/-/tribe?eosId=0002a1b2c3d4e5f6",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "players", "-", "tribe"],
+					"query": [
+						{ "key": "eosId", "value": "0002a1b2c3d4e5f6" }
+					]
+				}
+			},
+			"response": [],
+			"description": "The path segment (`-` here) is ignored once `eosId` (or `playerId`) is given as a query param."
 		},
 		{
 			"name": "Save World",

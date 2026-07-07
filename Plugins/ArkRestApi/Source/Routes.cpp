@@ -510,32 +510,21 @@ namespace ArkRestApi::Routes
 		return {{"success", true}, {"note", "God mode toggled - calling this again switches it back off"}};
 	}
 
-	nlohmann::json GetInventoryCount(const std::string& playerKey, const std::string& itemName)
+	nlohmann::json GetInventoryCount(const nlohmann::json& playerSelector, const std::string& itemName)
 	{
 		if (itemName.empty())
 		{
 			throw RestApiError(400, "item query parameter is required");
 		}
 
-		AShooterPlayerController* pc =
-			AsaApi::GetApiUtils().FindPlayerFromPlatformName(FString::FromStringUTF8(playerKey));
-		if (pc == nullptr)
-		{
-			throw RestApiError(404, "Player not found by steamName: " + playerKey);
-		}
-
+		AShooterPlayerController* pc = ResolvePlayer(playerSelector);
 		const int count = AsaApi::IApiUtils::GetInventoryItemCount(pc, FString::FromStringUTF8(itemName));
 		return {{"item", itemName}, {"count", count}};
 	}
 
-	nlohmann::json GetTribeId(const std::string& playerKey)
+	nlohmann::json GetTribeId(const nlohmann::json& playerSelector)
 	{
-		AShooterPlayerController* pc =
-			AsaApi::GetApiUtils().FindPlayerFromPlatformName(FString::FromStringUTF8(playerKey));
-		if (pc == nullptr)
-		{
-			throw RestApiError(404, "Player not found by steamName: " + playerKey);
-		}
+		AShooterPlayerController* pc = ResolvePlayer(playerSelector);
 
 		return {
 			{"tribeId", AsaApi::IApiUtils::GetTribeID(pc)},

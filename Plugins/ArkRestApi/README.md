@@ -43,7 +43,10 @@ Authorization: Bearer <BearerToken from config.json>
 ## Endpoints
 
 All bodies/responses are JSON. Player selectors (`kick`, `ban` aside) accept **one of**
-`steamName`, `eosId` or `playerId` in the request body.
+`steamName`, `eosId` or `playerId` in the request body. The two GET-by-name routes
+(`inventory-count`, `tribe`) take the same selector via query params instead, since GET
+requests have no body — see their notes below. `ban` is the only route that requires
+`steamName` specifically: the underlying engine API only bans by name.
 
 | Method | Path | Body | Notes |
 |---|---|---|---|
@@ -67,8 +70,8 @@ All bodies/responses are JSON. Player selectors (`kick`, `ban` aside) accept **o
 | POST | `/api/v1/players/set-level` | `{"steamName":"...","level":100}` | Sets the player's level directly. |
 | POST | `/api/v1/players/clear-inventory` | `{"steamName":"...","clearInventory":true,"clearSlotItems":true,"clearEquippedItems":true}` | |
 | POST | `/api/v1/players/god` | `{"steamName":"..."}` | **Toggle** — calling it again turns God Mode back off. |
-| GET | `/api/v1/players/{steamName}/inventory-count?item=ItemName` | - | |
-| GET | `/api/v1/players/{steamName}/tribe` | - | Returns `tribeId` and `tribeName`. |
+| GET | `/api/v1/players/{steamName}/inventory-count?item=ItemName` | - | Add `?playerId=...` or `?eosId=...` to select by ID instead of name (either overrides the path segment — put any placeholder, e.g. `-`, in the path when using one of these). `playerId` wins if both are given. |
+| GET | `/api/v1/players/{steamName}/tribe` | - | Returns `tribeId` and `tribeName`. Same `?playerId=...`/`?eosId=...` override as `inventory-count`. |
 | POST | `/api/v1/world/save` | - | |
 | POST | `/api/v1/world/destroy-all-enemies` | - | Destroys all wild/hostile dinos on the map. Destructive, global action. |
 | POST | `/api/v1/world/time` | `{"time":"1200"}` | Sets the map's time of day. |
