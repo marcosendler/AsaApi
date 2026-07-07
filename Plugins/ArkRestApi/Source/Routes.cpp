@@ -94,6 +94,23 @@ namespace ArkRestApi::Routes
 			const float z = static_cast<float>(body.at("z").get<double>());
 			return FVector{x, y, z};
 		}
+
+		std::optional<EPrimalCharacterStatusValue::Type> ParseStatName(const std::string& name)
+		{
+			if (name == "health") return EPrimalCharacterStatusValue::Health;
+			if (name == "stamina") return EPrimalCharacterStatusValue::Stamina;
+			if (name == "torpidity") return EPrimalCharacterStatusValue::Torpidity;
+			if (name == "oxygen") return EPrimalCharacterStatusValue::Oxygen;
+			if (name == "food") return EPrimalCharacterStatusValue::Food;
+			if (name == "water") return EPrimalCharacterStatusValue::Water;
+			if (name == "temperature") return EPrimalCharacterStatusValue::Temperature;
+			if (name == "weight") return EPrimalCharacterStatusValue::Weight;
+			if (name == "meleeDamageMultiplier") return EPrimalCharacterStatusValue::MeleeDamageMultiplier;
+			if (name == "speedMultiplier") return EPrimalCharacterStatusValue::SpeedMultiplier;
+			if (name == "temperatureFortitude") return EPrimalCharacterStatusValue::TemperatureFortitude;
+			if (name == "craftingSpeedMultiplier") return EPrimalCharacterStatusValue::CraftingSpeedMultiplier;
+			return std::nullopt;
+		}
 	} // namespace
 
 	nlohmann::json GetStatus()
@@ -559,6 +576,63 @@ namespace ArkRestApi::Routes
 
 		cheatManager->God();
 		return {{"success", true}, {"note", "God mode toggled - calling this again switches it back off"}};
+	}
+
+	nlohmann::json SetPlayerStats(const nlohmann::json& body)
+	{
+		if (!body.contains("stats") || !body["stats"].is_object() || body["stats"].empty())
+		{
+			throw RestApiError(400, "stats must be a non-empty object");
+		}
+
+		AShooterPlayerController* pc = ResolvePlayer(body);
+		AShooterCharacter* character = pc->GetPlayerCharacter();
+		if (character == nullptr)
+		{
+			throw RestApiError(500, "Player has no active character");
+		}
+
+		UPrimalCharacterStatusComponent* statusComponent = character->GetCharacterStatusComponent();
+		if (statusComponent == nullptr)
+		{
+			throw RestApiError(500, "Player character has no status component");
+		}
+
+		nlohmann::json results = nlohmann::json::object();
+		for (auto it = body["stats"].begin(); it != body["stats"].end(); ++it)
+		{
+			const std::string statName = it.key();
+			const nlohmann::json& entry = it.value();
+
+			const std::optional<EPrimalCharacterStatusValue::Type> statType = ParseStatName(statName);
+			if (!statType.has_value())
+			{
+				results[statName] = {{"success", false}, {"error", "Unknown stat name"}};
+				continue;
+			}
+
+			if (!entry.contains("currentValue") && !entry.contains("maxValue"))
+			{
+				results[statName] = {{"success", false}, {"error", "Provide currentValue and/or maxValue"}};
+				continue;
+			}
+
+			// Max first, then current: raising current above a stale max would otherwise
+			// get clamped back down immediately.
+			if (entry.contains("maxValue"))
+			{
+				statusComponent->SetMaxStatusValue(*statType, entry["maxValue"].get<float>());
+			}
+
+			if (entry.contains("currentValue"))
+			{
+				statusComponent->BPDirectSetCurrentStatusValue(*statType, entry["currentValue"].get<float>());
+			}
+
+			results[statName] = {{"success", true}};
+		}
+
+		return {{"results", results}};
 	}
 
 	nlohmann::json GetInventoryCount(const nlohmann::json& playerSelector, const std::string& itemName)

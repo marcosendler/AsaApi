@@ -204,6 +204,11 @@ namespace ArkRestApi
 			return RunOnGameThread([body] { return Routes::ToggleGodMode(body); }, maxQueueWaitMs);
 		}
 
+		if (method == "POST" && path == "/api/v1/players/set-stats")
+		{
+			return RunOnGameThread([body] { return Routes::SetPlayerStats(body); }, maxQueueWaitMs);
+		}
+
 		if (method == "POST" && path == "/api/v1/world/save")
 		{
 			return RunOnGameThread([] { return Routes::SaveWorld(); }, maxQueueWaitMs);

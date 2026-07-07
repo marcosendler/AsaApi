@@ -70,6 +70,7 @@ requests have no body — see their notes below. `ban` is the only route that re
 | POST | `/api/v1/players/set-level` | `{"steamName":"...","level":100}` | Sets the player's level directly. |
 | POST | `/api/v1/players/clear-inventory` | `{"steamName":"...","clearInventory":true,"clearSlotItems":true,"clearEquippedItems":true}` | |
 | POST | `/api/v1/players/god` | `{"steamName":"..."}` | **Toggle** — calling it again turns God Mode back off. |
+| POST | `/api/v1/players/set-stats` | `{"steamName":"...","stats":{"health":{"currentValue":500,"maxValue":500},"weight":{"maxValue":1000}}}` | Sets one or more character stats directly. Each entry accepts `currentValue` and/or `maxValue` (send just what you want to change). Valid stat names: `health`, `stamina`, `torpidity`, `oxygen`, `food`, `water`, `temperature`, `weight`, `meleeDamageMultiplier`, `speedMultiplier`, `temperatureFortitude`, `craftingSpeedMultiplier`. Returns `{"results":{"<stat>":{"success":true},...}}` — an unknown stat name or a stat missing both values fails just that entry, not the rest. |
 | GET | `/api/v1/players/{steamName}/inventory-count?item=ItemName` | - | Add `?playerId=...` or `?eosId=...` to select by ID instead of name (either overrides the path segment — put any placeholder, e.g. `-`, in the path when using one of these). `playerId` wins if both are given. |
 | GET | `/api/v1/players/{steamName}/tribe` | - | Returns `tribeId` and `tribeName`. Same `?playerId=...`/`?eosId=...` override as `inventory-count`. |
 | POST | `/api/v1/world/save` | - | |

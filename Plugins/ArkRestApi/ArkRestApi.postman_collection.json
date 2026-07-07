@@ -410,6 +410,27 @@
 			"description": "Toggle - calling this again switches God Mode back off."
 		},
 		{
+			"name": "Set Player Stats",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"stats\": {\n    \"health\": { \"currentValue\": 500, \"maxValue\": 500 },\n    \"stamina\": { \"maxValue\": 600 },\n    \"weight\": { \"maxValue\": 1000 },\n    \"meleeDamageMultiplier\": { \"maxValue\": 300 }\n  }\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/players/set-stats",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "players", "set-stats"]
+				}
+			},
+			"response": [],
+			"description": "Sets one or more stats directly. Each entry accepts currentValue and/or maxValue. Valid names: health, stamina, torpidity, oxygen, food, water, temperature, weight, meleeDamageMultiplier, speedMultiplier, temperatureFortitude, craftingSpeedMultiplier."
+		},
+		{
 			"name": "Inventory Count",
 			"request": {
 				"method": "GET",

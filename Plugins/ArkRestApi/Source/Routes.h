@@ -34,6 +34,7 @@ namespace ArkRestApi::Routes
 	nlohmann::json SetPlayerLevel(const nlohmann::json& body);
 	nlohmann::json ClearInventory(const nlohmann::json& body);
 	nlohmann::json ToggleGodMode(const nlohmann::json& body);
+	nlohmann::json SetPlayerStats(const nlohmann::json& body);
 
 	// playerSelector is a json object containing one of: steamName, eosId, playerId (same shape
 	// accepted in POST bodies elsewhere in this file).
