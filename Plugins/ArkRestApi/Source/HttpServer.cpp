@@ -15,9 +15,9 @@
 #include <Poco/URI.h>
 
 #include <json.hpp>
-#include <Logger/Logger.h>
 
 #include "ApiRouter.h"
+#include "PluginLog.h"
 
 namespace ArkRestApi
 {
@@ -166,12 +166,12 @@ namespace ArkRestApi
 				new RestRequestHandlerFactory(sharedConfig), socket, params);
 			server_->start();
 
-			Log::GetLog()->info("ArkRestApi: listening on {}:{}", config.bindAddress, config.port);
+			GetPluginLog()->info("ArkRestApi: listening on {}:{}", config.bindAddress, config.port);
 			return true;
 		}
 		catch (const std::exception& error)
 		{
-			Log::GetLog()->error("ArkRestApi: failed to start HTTP server: {}", error.what());
+			GetPluginLog()->error("ArkRestApi: failed to start HTTP server: {}", error.what());
 			server_.reset();
 			return false;
 		}

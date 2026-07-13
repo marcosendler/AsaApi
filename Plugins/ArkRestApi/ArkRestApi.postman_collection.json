@@ -249,7 +249,7 @@
 				}
 			},
 			"response": [],
-			"description": "Spawns the dino and immediately captures it into a cryopod delivered straight into the player's inventory. `gender` is optional (\"male\"/\"female\"). `saddleBlueprint` is strongly recommended - cryopod-ing erases the forceTame no-saddle-needed bypass, so without a real saddle equipped before capture the dino comes out with no inventory/riding access."
+			"description": "Spawns the dino and immediately captures it into a cryopod delivered straight into the player's inventory. `gender` is optional (\"male\"/\"female\"). `saddleBlueprint` is strongly recommended - cryopod-ing erases the forceTame no-saddle-needed bypass, so without a real saddle equipped before capture the dino comes out with no inventory/riding access. `cryopodBlueprint` overrides the empty-cryopod item (defaults to vanilla Extinction) - required if your server runs a cryopod-replacing mod (Alfa Cryopod, Pelayori's Cryo Storage, etc.), since the vanilla class can fail to construct once such a mod has overridden the server's PrimalGameData."
 		},
 		{
 			"name": "Spawn Item",

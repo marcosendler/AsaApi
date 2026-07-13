@@ -3,11 +3,11 @@
 
 #include <ICommands.h>
 #include <Tools.h>
-#include <Logger/Logger.h>
 #include <json.hpp>
 
 #include "GameThreadDispatcher.h"
 #include "HttpServer.h"
+#include "PluginLog.h"
 #include "RestApiConfig.h"
 
 namespace ArkRestApi
@@ -24,7 +24,7 @@ namespace ArkRestApi
 			std::ifstream file(path);
 			if (!file.is_open())
 			{
-				Log::GetLog()->warn("ArkRestApi: config.json not found at {}, using defaults", path);
+				ArkRestApi::GetPluginLog()->warn("ArkRestApi: config.json not found at {}, using defaults", path);
 				return config;
 			}
 
@@ -42,7 +42,7 @@ namespace ArkRestApi
 			}
 			catch (const std::exception& error)
 			{
-				Log::GetLog()->error("ArkRestApi: failed to parse config.json: {}", error.what());
+				ArkRestApi::GetPluginLog()->error("ArkRestApi: failed to parse config.json: {}", error.what());
 			}
 
 			return config;
@@ -52,19 +52,17 @@ namespace ArkRestApi
 
 extern "C" __declspec(dllexport) void Plugin_Init()
 {
-	Log::Get().Init("ArkRestApi");
-
 	const ArkRestApi::RestApiConfig config = ArkRestApi::LoadConfig();
 
 	if (!config.enabled)
 	{
-		Log::GetLog()->info("ArkRestApi: disabled via config.json");
+		ArkRestApi::GetPluginLog()->info("ArkRestApi: disabled via config.json");
 		return;
 	}
 
 	if (config.bearerToken.empty() || config.bearerToken == "CHANGE_ME_TO_A_LONG_RANDOM_SECRET")
 	{
-		Log::GetLog()->error("ArkRestApi: refusing to start - set a real BearerToken in config.json");
+		ArkRestApi::GetPluginLog()->error("ArkRestApi: refusing to start - set a real BearerToken in config.json");
 		return;
 	}
 

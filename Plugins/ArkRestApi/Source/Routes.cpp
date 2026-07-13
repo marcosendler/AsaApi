@@ -6,6 +6,7 @@
 #include <IApiUtils.h>
 #include <Tools.h>
 
+#include "PluginLog.h"
 #include "RestApiError.h"
 
 namespace ArkRestApi::Routes
@@ -324,6 +325,11 @@ namespace ArkRestApi::Routes
 			throw RestApiError(400, "blueprint is required");
 		}
 
+		auto log = [](const char* msg)
+		{
+			GetPluginLog()->info(msg);
+		};
+
 		// The dino is captured into a cryopod owned by this player, so (unlike SpawnDino)
 		// there's no free-standing "nearPlayer"/x,y,z placement - it's always spawned near
 		// the recipient and immediately packed into the item.
@@ -334,6 +340,7 @@ namespace ArkRestApi::Routes
 		const bool forceTame = body.value("forceTame", true);
 		const bool neutered = body.value("neutered", false);
 
+		log("ArkRestApi: [cryopod] calling SpawnDino");
 		APrimalDinoCharacter* dino =
 			AsaApi::GetApiUtils().SpawnDino(pc, blueprint, nullptr, level, forceTame, neutered);
 		if (dino == nullptr)
@@ -341,6 +348,7 @@ namespace ArkRestApi::Routes
 			throw RestApiError(500,
 				"Failed to spawn dino - check the blueprint path and that at least one player is online");
 		}
+		log("ArkRestApi: [cryopod] SpawnDino ok");
 
 		if (body.contains("gender") && body["gender"].is_string())
 		{
@@ -350,8 +358,10 @@ namespace ArkRestApi::Routes
 				throw RestApiError(400, "gender must be \"male\" or \"female\"");
 			}
 
+			log("ArkRestApi: [cryopod] setting gender");
 			dino->bIsFemale() = (gender == "female");
 			dino->hasAlreadySetGender() = true;
+			log("ArkRestApi: [cryopod] gender set ok");
 		}
 
 		// Cryopod-ing a dino erases the "ride/use without a saddle" bypass that forceTame
@@ -364,11 +374,13 @@ namespace ArkRestApi::Routes
 			FString saddleBlueprint = FString::FromStringUTF8(body["saddleBlueprint"].get<std::string>());
 			const float saddleQuality = body.value("saddleQuality", 0.0f);
 
+			log("ArkRestApi: [cryopod] calling GiveSaddleFromString");
 			UPrimalItem* saddle = dino->GiveSaddleFromString(&saddleBlueprint, saddleQuality, 0.0f, true);
 			if (saddle == nullptr)
 			{
 				throw RestApiError(500, "Failed to equip saddle - check the saddleBlueprint path");
 			}
+			log("ArkRestApi: [cryopod] GiveSaddleFromString ok");
 		}
 
 		// AShooterPlayerController::GiveCryoItemAndCaptureDino is built for the normal
@@ -378,34 +390,60 @@ namespace ArkRestApi::Routes
 		// ARK plugins (e.g. ArkShop's GiveDinosInCryopods) do it: create an empty cryopod
 		// item, read the dino's current state into a FCustomItemData snapshot, attach that
 		// snapshot to the item, hand the item to the player, then remove the live dino.
-		const FString kCryopodBlueprint = FString::FromStringUTF8(
-			"Blueprint'/Game/Extinction/CoreBlueprints/Weapons/PrimalItem_WeaponEmptyCryopod."
-			"PrimalItem_WeaponEmptyCryopod_C'");
+		// Default is the vanilla Extinction empty cryopod. Servers running a cryopod-replacing
+		// mod (e.g. Alfa Cryopod, Pelayori's Cryo Storage) may need to override this with that
+		// mod's own item blueprint path via "cryopodBlueprint" - the vanilla class can fail to
+		// construct (crash) once such a mod has overridden the server's PrimalGameData.
+		// No "_C" suffix here, matching the exact default the official ASA ArkShop plugin uses
+		// for this same call (ArkServerApi/ASA-Plugins) - BPLoadClass appears to resolve this
+		// form fine for this item.
+		const FString kCryopodBlueprint = body.contains("cryopodBlueprint") && body["cryopodBlueprint"].is_string()
+			? FString::FromStringUTF8(body["cryopodBlueprint"].get<std::string>())
+			: FString::FromStringUTF8(
+				"Blueprint'/Game/Extinction/CoreBlueprints/Weapons/PrimalItem_WeaponEmptyCryopod."
+				"PrimalItem_WeaponEmptyCryopod'");
 
+		GetPluginLog()->info("ArkRestApi: [cryopod] using cryopod blueprint: {}", kCryopodBlueprint.ToStringUTF8());
+		log("ArkRestApi: [cryopod] loading cryopod blueprint class");
 		TSubclassOf<UPrimalItem> cryopodArchetype;
 		cryopodArchetype.uClass = UVictoryCore::BPLoadClass(kCryopodBlueprint);
 		if (cryopodArchetype.uClass == nullptr)
 		{
 			throw RestApiError(500, "Failed to load the empty cryopod blueprint");
 		}
+		log("ArkRestApi: [cryopod] cryopod blueprint class loaded ok");
 
-		UPrimalItem* cryopodItem = UPrimalItem::AddNewItem(cryopodArchetype, nullptr, false, false, 0.0f, false, 1,
-			false, 0, false, nullptr, 0, 0, 0, true, false, false);
+		// Matches the exact AddNewItem call used by the official ASA ArkShop plugin's
+		// GiveDino (ArkServerApi/ASA-Plugins) for this same purpose: GiveToInventory=nullptr
+		// and quantityOverride=0 - passing 1 there (an earlier attempt here) crashed the
+		// server, so this specific item type appears not to tolerate an explicit override.
+		log("ArkRestApi: [cryopod] creating cryopod item via AddNewItem");
+		UPrimalItem* cryopodItem = UPrimalItem::AddNewItem(cryopodArchetype, nullptr, false, false, 0.0f, false, 0,
+			false, 0, false, nullptr, 0, false, false, true, false, false);
 		if (cryopodItem == nullptr)
 		{
 			throw RestApiError(500, "Failed to create the cryopod item");
 		}
+		log("ArkRestApi: [cryopod] cryopod item created ok");
 
+		log("ArkRestApi: [cryopod] calling GetCryoDinoData");
 		FCustomItemData cryoData;
 		if (UVictoryCore::GetCryoDinoData(&cryoData, pc, dino) == nullptr)
 		{
 			throw RestApiError(500, "Failed to capture the dino into the cryopod");
 		}
+		log("ArkRestApi: [cryopod] GetCryoDinoData returned ok");
 
+		log("ArkRestApi: [cryopod] calling SetCustomItemData");
 		cryopodItem->SetCustomItemData(&cryoData);
+		log("ArkRestApi: [cryopod] SetCustomItemData ok, calling UpdatedItem");
+		cryopodItem->UpdatedItem(true, false);
+		log("ArkRestApi: [cryopod] UpdatedItem ok, calling AddItemObject");
 		pc->GetPlayerInventoryComponent()->AddItemObject(cryopodItem);
+		log("ArkRestApi: [cryopod] AddItemObject ok, calling dino->Destroy");
 
 		dino->Destroy(true, false);
+		log("ArkRestApi: [cryopod] dino->Destroy ok, done");
 		return {{"success", true}};
 	}
 
