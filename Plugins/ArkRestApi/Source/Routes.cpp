@@ -419,7 +419,7 @@ namespace ArkRestApi::Routes
 		// server, so this specific item type appears not to tolerate an explicit override.
 		log("ArkRestApi: [cryopod] creating cryopod item via AddNewItem");
 		UPrimalItem* cryopodItem = UPrimalItem::AddNewItem(cryopodArchetype, nullptr, false, false, 0.0f, false, 0,
-			false, 0, false, nullptr, 0, false, false, true, false, false);
+			false, 0, false, nullptr, 0, false, false, true, false, false, false, AsaApi::GetApiUtils().GetWorld());
 		if (cryopodItem == nullptr)
 		{
 			throw RestApiError(500, "Failed to create the cryopod item");
@@ -439,7 +439,17 @@ namespace ArkRestApi::Routes
 		log("ArkRestApi: [cryopod] SetCustomItemData ok, calling UpdatedItem");
 		cryopodItem->UpdatedItem(true, false);
 		log("ArkRestApi: [cryopod] UpdatedItem ok, calling AddItemObject");
-		pc->GetPlayerInventoryComponent()->AddItemObject(cryopodItem);
+		// AShooterPlayerController::GetPlayerInventoryComponent() is gone from the SDK as of
+		// game version 38 - AsaApi's own GiveItem helper (ArkApiUtils.h) switched to this same
+		// GetPlayerCharacter()->MyInventoryComponentField() path for the same reason.
+		AShooterCharacter* playerCharacter = pc->GetPlayerCharacter();
+		UPrimalInventoryComponent* inventoryComponent =
+			playerCharacter != nullptr ? playerCharacter->MyInventoryComponentField() : nullptr;
+		if (inventoryComponent == nullptr)
+		{
+			throw RestApiError(500, "Failed to add the cryopod item - player has no inventory component");
+		}
+		inventoryComponent->AddItemObject(cryopodItem);
 		log("ArkRestApi: [cryopod] AddItemObject ok, calling dino->Destroy");
 
 		dino->Destroy(true, false);
