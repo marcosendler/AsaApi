@@ -536,6 +536,34 @@
 					"path": ["api", "v1", "world", "time"]
 				}
 			}
+		},
+		{
+			"name": "Shutdown Server",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/server/shutdown",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "server", "shutdown"]
+				}
+			},
+			"response": [],
+			"description": "Calls UShooterCheatManager::DoExit(), terminating the server process. No engine-level restart happens on its own - pair with a process manager that relaunches the server if needed."
+		},
+		{
+			"name": "Restart Server",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/server/restart",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "server", "restart"]
+				}
+			},
+			"response": [],
+			"description": "Identical to Shutdown Server (both call DoExit()) - separate route so caller intent is clear in logs/monitoring."
 		}
 	]
 }

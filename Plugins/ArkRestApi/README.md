@@ -76,6 +76,8 @@ requests have no body — see their notes below. `ban` is the only route that re
 | POST | `/api/v1/world/save` | - | |
 | POST | `/api/v1/world/destroy-all-enemies` | - | Destroys all wild/hostile dinos on the map. Destructive, global action. |
 | POST | `/api/v1/world/time` | `{"time":"1200"}` | Sets the map's time of day. |
+| POST | `/api/v1/server/shutdown` | - | Calls `UShooterCheatManager::DoExit()`, which terminates the server process. There is no engine-level "restart" - use a process manager (systemd, Pterodactyl/AMP, a wrapper script) that auto-relaunches the server for that. |
+| POST | `/api/v1/server/restart` | - | Identical to `shutdown` from inside the game process (both just call `DoExit()`) - kept as a separate route so the caller's intent is clear in logs/monitoring; whether it actually comes back up depends entirely on the external process manager. |
 
 ## Examples
 

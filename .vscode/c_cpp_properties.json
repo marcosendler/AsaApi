@@ -1,0 +1,27 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/AsaApi/Core/Public/**",
+                "${workspaceFolder}/AsaApi/Core/Private/**",
+                "${workspaceFolder}/Plugins/ArkRestApi/Source/**",
+                "${workspaceFolder}/AsaApi/vcpkg_installed/x64-windows-1439-static-md/x64-windows-1439-static-md/include/**"
+            ],
+            "defines": [
+                "_WINDOWS",
+                "_USRDLL",
+                "POCO_STATIC",
+                "ASAAPI_EXPORTS",
+                "ARK_EXPORTS",
+                "NDEBUG"
+            ],
+            "windowsSdkVersion": "10.0.26100.0",
+            "compilerPath": "D:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\cl.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++20",
+            "intelliSenseMode": "windows-msvc-x64"
+        }
+    ],
+    "version": 4
+}

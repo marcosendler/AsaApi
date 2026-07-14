@@ -44,4 +44,11 @@ namespace ArkRestApi::Routes
 	nlohmann::json SaveWorld();
 	nlohmann::json DestroyAllEnemies();
 	nlohmann::json SetTimeOfDay(const nlohmann::json& body);
+
+	// Both call UShooterCheatManager::DoExit() - there is no engine-level distinction between
+	// "shutdown" and "restart" from inside the game process. DoExit() just terminates the
+	// process; whatever launches the server (systemd, a script, Pterodactyl/AMP, ...) is what
+	// decides whether it comes back up afterwards.
+	nlohmann::json ShutdownServer();
+	nlohmann::json RestartServer();
 } // namespace ArkRestApi::Routes

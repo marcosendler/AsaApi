@@ -224,6 +224,16 @@ namespace ArkRestApi
 			return RunOnGameThread([body] { return Routes::SetTimeOfDay(body); }, maxQueueWaitMs);
 		}
 
+		if (method == "POST" && path == "/api/v1/server/shutdown")
+		{
+			return RunOnGameThread([] { return Routes::ShutdownServer(); }, maxQueueWaitMs);
+		}
+
+		if (method == "POST" && path == "/api/v1/server/restart")
+		{
+			return RunOnGameThread([] { return Routes::RestartServer(); }, maxQueueWaitMs);
+		}
+
 		if (method == "GET" && std::regex_match(path, match, kInventoryCountPattern))
 		{
 			const std::string playerKey = UrlDecode(match[1].str());

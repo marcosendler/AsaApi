@@ -740,4 +740,30 @@ namespace ArkRestApi::Routes
 		cheatManager->SetTimeOfDay(&time);
 		return {{"success", true}};
 	}
+
+	namespace
+	{
+		nlohmann::json DoExitServer(const char* actionLabel)
+		{
+			UShooterCheatManager* cheatManager = AsaApi::GetApiUtils().GetCheatManager();
+			if (cheatManager == nullptr)
+			{
+				throw RestApiError(500, "No cheat manager available");
+			}
+
+			GetPluginLog()->warn("ArkRestApi: {} requested via REST API - calling DoExit", actionLabel);
+			cheatManager->DoExit();
+			return {{"success", true}};
+		}
+	} // namespace
+
+	nlohmann::json ShutdownServer()
+	{
+		return DoExitServer("shutdown");
+	}
+
+	nlohmann::json RestartServer()
+	{
+		return DoExitServer("restart");
+	}
 } // namespace ArkRestApi::Routes
