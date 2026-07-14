@@ -58,7 +58,9 @@
 					"host": ["{{baseUrl}}"],
 					"path": ["api", "v1", "status"]
 				}
-			}
+			},
+			"response": [],
+			"description": "Returns {\"status\":\"Ready\",\"onlinePlayers\":7,\"maxPlayers\":70,\"serverName\":\"...\",\"mapName\":\"TheIsland_WP\",\"pve\":true,\"dayTime\":\"Day 12, 14:32\",\"memory\":{\"workingSetMB\":8421,\"privateBytesMB\":8390}}. status is \"Loading\" until the map finishes loading - while Loading, this and every other authenticated route time out (504) since they're all queued onto the game thread."
 		},
 		{
 			"name": "List Players",

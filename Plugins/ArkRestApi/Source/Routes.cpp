@@ -6,6 +6,9 @@
 #include <IApiUtils.h>
 #include <Tools.h>
 
+#include <Psapi.h>
+#pragma comment(lib, "Psapi.lib")
+
 #include "PluginLog.h"
 #include "RestApiError.h"
 
@@ -119,9 +122,49 @@ namespace ArkRestApi::Routes
 		const auto status = AsaApi::GetApiUtils().GetStatus();
 		const int onlinePlayers = AsaApi::GetApiUtils().GetWorld()->PlayerControllerListField().Num();
 
+		FString mapName;
+		FString serverName;
+		FString dayTime;
+		bool pve = false;
+		int maxPlayers = 0;
+
+		AShooterGameMode* gameMode = AsaApi::GetApiUtils().GetShooterGameMode();
+		if (gameMode != nullptr)
+		{
+			gameMode->GetMapName(&mapName);
+			gameMode->GetServerName(&serverName, false);
+			pve = gameMode->bServerPVEField();
+
+			AGameSession* gameSession = gameMode->GameSessionField().Get();
+			if (gameSession != nullptr)
+			{
+				maxPlayers = gameSession->MaxPlayersField();
+			}
+
+			AShooterGameState* gameState = gameMode->GetGameState();
+			if (gameState != nullptr)
+			{
+				gameState->GetDayTimeString(&dayTime);
+			}
+		}
+
+		PROCESS_MEMORY_COUNTERS_EX memCounters{};
+		memCounters.cb = sizeof(memCounters);
+		GetProcessMemoryInfo(
+			GetCurrentProcess(), reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&memCounters), sizeof(memCounters));
+
 		return {
 			{"status", status == AsaApi::ServerStatus::Ready ? "Ready" : "Loading"},
-			{"onlinePlayers", onlinePlayers}
+			{"onlinePlayers", onlinePlayers},
+			{"maxPlayers", maxPlayers},
+			{"serverName", serverName.ToStringUTF8()},
+			{"mapName", mapName.ToStringUTF8()},
+			{"pve", pve},
+			{"dayTime", dayTime.ToStringUTF8()},
+			{"memory", {
+				{"workingSetMB", static_cast<std::uint64_t>(memCounters.WorkingSetSize / (1024 * 1024))},
+				{"privateBytesMB", static_cast<std::uint64_t>(memCounters.PrivateUsage / (1024 * 1024))}
+			}}
 		};
 	}
 

@@ -51,7 +51,7 @@ requests have no body — see their notes below. `ban` is the only route that re
 | Method | Path | Body | Notes |
 |---|---|---|---|
 | GET | `/health` | - | No auth. Liveness check. |
-| GET | `/api/v1/status` | - | Server status + online player count. |
+| GET | `/api/v1/status` | - | Server status, player counts, map/server name, PvE/PvP, in-game time, and process memory usage. Returns `{"status":"Ready","onlinePlayers":7,"maxPlayers":70,"serverName":"...","mapName":"TheIsland_WP","pve":true,"dayTime":"Day 12, 14:32","memory":{"workingSetMB":8421,"privateBytesMB":8390}}`. |
 | GET | `/api/v1/players` | - | List of online players, each with `playerId`, `steamName`, `characterName`, `eosId`, `level`, `tribeId`, `tribeName`, `ip`, `isDead`, `position`. |
 | POST | `/api/v1/players/kick` | `{"steamName":"..."}` or `{"playerId":..., "reason":"..."}` | |
 | POST | `/api/v1/players/ban` | `{"steamName":"...", "durationMinutes":0}` | `durationMinutes: 0` = permanent. |
