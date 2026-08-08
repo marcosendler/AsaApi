@@ -112,7 +112,6 @@ struct BitField
 	ULONGLONG num_bits;
 	ULONGLONG length; //in bytes
 };
-struct EActorLists {};
 struct EActorUpdateOverlapsMethod;
 struct EComponentCreationMethod;
 struct EDLCSelector {};

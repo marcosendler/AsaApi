@@ -1,0 +1,107 @@
+# ArkRestApi
+
+AsaApi plugin that exposes server actions over a REST HTTP API secured with a Bearer token.
+Built on `Poco::Net::HTTPServer` (already a vcpkg dependency of AsaApi core). All game calls run
+on the main game thread — HTTP requests are queued and executed on the next tick, so it's safe
+even though the HTTP server runs on its own thread pool.
+
+## Build
+
+1. Open `AsaApi.sln` — the `ArkRestApi` project was added alongside `AsaApi` and depends on it
+   (build order is already set).
+2. Build `AsaApi` first (Release|x64), then build `ArkRestApi`. It links against
+   `out_lib\AsaApi.lib`, produced by AsaApi's post-build step.
+3. If this is the first time building with vcpkg manifest mode in this project folder, `vcpkg`
+   will fetch/build `poco[netssl]` for the `x64-windows-1439-static-md` triplet the first time —
+   this can take a while. Requires `vcpkg integrate install` to have been run once on the machine
+   (same requirement as the core AsaApi project).
+4. The post-build step copies `ArkRestApi.dll`, `PluginInfo.json` and `config.json` into
+   `_Deploy\ArkApi\Plugins\ArkRestApi\` at the solution root, ready to copy to the server.
+
+## Deploy
+
+Copy the folder `_Deploy\ArkApi\Plugins\ArkRestApi\` to your server at:
+
+```
+<ServerDir>\ShooterGame\Binaries\Win64\ArkApi\Plugins\ArkRestApi\
+```
+
+Edit `config.json` there and set a real `BearerToken` (long random string) — the plugin refuses
+to start if it's left as the placeholder or empty. `Port`/`BindAddress` control where it listens;
+`0.0.0.0` binds all interfaces, so put this behind a firewall/VPN unless you add TLS in front of it
+(there's no HTTPS termination in the plugin itself — run it behind a reverse proxy, or restrict
+`BindAddress`/firewall rules to trusted IPs, if it's reachable from the internet).
+
+## Authentication
+
+Every route except `GET /health` requires:
+
+```
+Authorization: Bearer <BearerToken from config.json>
+```
+
+## Endpoints
+
+All bodies/responses are JSON. Player selectors (`kick`, `ban` aside) accept **one of**
+`steamName`, `eosId` or `playerId` in the request body. The two GET-by-name routes
+(`inventory-count`, `tribe`) take the same selector via query params instead, since GET
+requests have no body — see their notes below. `ban` is the only route that requires
+`steamName` specifically: the underlying engine API only bans by name.
+
+| Method | Path | Body | Notes |
+|---|---|---|---|
+| GET | `/health` | - | No auth. Liveness check. |
+| GET | `/api/v1/status` | - | Server status, player counts, map/server name, PvE/PvP, in-game time, and process memory usage. Returns `{"status":"Ready","onlinePlayers":7,"maxPlayers":70,"serverName":"...","mapName":"TheIsland_WP","pve":true,"dayTime":"Day 12, 14:32","memory":{"workingSetMB":8421,"privateBytesMB":8390}}`. |
+| GET | `/api/v1/players` | - | List of online players, each with `playerId`, `steamName`, `characterName`, `eosId`, `level`, `tribeId`, `tribeName`, `ip`, `isDead`, `position`. |
+| POST | `/api/v1/players/kick` | `{"steamName":"..."}` or `{"playerId":..., "reason":"..."}` | |
+| POST | `/api/v1/players/ban` | `{"steamName":"...", "durationMinutes":0}` | `durationMinutes: 0` = permanent. |
+| POST | `/api/v1/broadcast` | `{"message":"...", "alsoChat":false}` | Server message to all; `alsoChat` also sends as chat. |
+| POST | `/api/v1/players/message` | `{"steamName":"...", "message":"...", "senderName":"Server"}` | Chat message to one player. |
+| POST | `/api/v1/players/notify` | `{"steamName":"...", "message":"...", "displayScale":1.3, "displayTime":5, "colorR":1,"colorG":1,"colorB":1,"colorA":1}` | On-screen notification (harder to miss than a chat line). |
+| POST | `/api/v1/players/teleport` | `{"steamName":"...", "x":0,"y":0,"z":0}` | |
+| POST | `/api/v1/players/teleport-to-player` | `{"from":{"steamName":"a"},"to":{"steamName":"b"},"checkForDino":true,"maxDistance":-1}` | |
+| POST | `/api/v1/spawn/dino` | `{"blueprint":"Blueprint'/Game/.../Dino_C'","nearPlayer":{"steamName":"..."},"level":1,"forceTame":false}` | `x/y/z` instead of `nearPlayer` to spawn at coords. |
+| POST | `/api/v1/spawn/dino-cryopod` | `{"steamName":"...","blueprint":"Blueprint'/Game/.../Dino_C'","level":1,"forceTame":true,"neutered":false,"gender":"male","saddleBlueprint":"Blueprint'/Game/.../Saddle_C'","saddleQuality":0,"cryopodBlueprint":"Blueprint'/Game/.../CustomCryopod_C'"}` | Spawns the dino and immediately captures it into a cryopod delivered straight into the player's inventory (no loose dino left in the world). `gender` is optional (`"male"`/`"female"`); omit to leave it at whatever the spawn rolled. **`saddleBlueprint` is strongly recommended for any dino you expect the player to ride or access the inventory of**: cryopod-ing erases the "ride/use without a saddle" bypass that `forceTame` grants, so without a real saddle equipped before capture, the dino comes out of the pod with no inventory/riding access. `cryopodBlueprint` overrides the empty-cryopod item blueprint (defaults to the vanilla Extinction one) — **required if your server runs a cryopod-replacing mod** (e.g. Alfa Cryopod, Pelayori's Cryo Storage): the vanilla class can fail to construct once such a mod has overridden the server's PrimalGameData, so point this at that mod's own item blueprint instead. |
+| POST | `/api/v1/spawn/item` | `{"blueprint":"...","x":0,"y":0,"z":0,"amount":1,"quality":0}` | Drops the item on the ground near the coords. |
+| POST | `/api/v1/players/give-item` | `{"steamName":"...","blueprint":"...","quantity":1,"quality":0,"autoEquip":false}` | Gives the item directly into the player's inventory. |
+| POST | `/api/v1/players/give-items` | `{"steamName":"...","items":[{"blueprint":"...","quantity":1,"quality":0},{"blueprint":"...","quantity":1}]}` | Batch version of `give-item` — delivers a whole kit in one call. Returns `{"results":[{"success":true},...]}`, one entry per item in the same order; a bad blueprint in one entry doesn't stop the rest. |
+| POST | `/api/v1/players/give-engrams` | `{"steamName":"...","forceAll":true,"tekOnly":false}` | Unlocks engrams for the player. |
+| POST | `/api/v1/players/give-exp` | `{"steamName":"...","amount":1000,"fromTribeShare":false,"preventSharingWithTribe":false}` | |
+| POST | `/api/v1/players/set-level` | `{"steamName":"...","level":100}` | Sets the player's level directly. |
+| POST | `/api/v1/players/clear-inventory` | `{"steamName":"...","clearInventory":true,"clearSlotItems":true,"clearEquippedItems":true}` | |
+| POST | `/api/v1/players/god` | `{"steamName":"..."}` | **Toggle** — calling it again turns God Mode back off. |
+| POST | `/api/v1/players/set-stats` | `{"steamName":"...","stats":{"health":{"currentValue":500,"maxValue":500},"weight":{"maxValue":1000}}}` | Sets one or more character stats directly. Each entry accepts `currentValue` and/or `maxValue` (send just what you want to change). Valid stat names: `health`, `stamina`, `torpidity`, `oxygen`, `food`, `water`, `temperature`, `weight`, `meleeDamageMultiplier`, `speedMultiplier`, `temperatureFortitude`, `craftingSpeedMultiplier`. Returns `{"results":{"<stat>":{"success":true},...}}` — an unknown stat name or a stat missing both values fails just that entry, not the rest. |
+| GET | `/api/v1/players/{steamName}/inventory-count?item=ItemName` | - | Add `?playerId=...` or `?eosId=...` to select by ID instead of name (either overrides the path segment — put any placeholder, e.g. `-`, in the path when using one of these). `playerId` wins if both are given. |
+| GET | `/api/v1/players/{steamName}/tribe` | - | Returns `tribeId` and `tribeName`. Same `?playerId=...`/`?eosId=...` override as `inventory-count`. |
+| POST | `/api/v1/world/save` | - | |
+| POST | `/api/v1/world/destroy-all-enemies` | - | Destroys all wild/hostile dinos on the map. Destructive, global action. |
+| POST | `/api/v1/world/time` | `{"time":"1200"}` | Sets the map's time of day. |
+| POST | `/api/v1/server/shutdown` | - | Calls `UShooterCheatManager::DoExit()`, which terminates the server process. There is no engine-level "restart" - use a process manager (systemd, Pterodactyl/AMP, a wrapper script) that auto-relaunches the server for that. |
+| POST | `/api/v1/server/restart` | - | Identical to `shutdown` from inside the game process (both just call `DoExit()`) - kept as a separate route so the caller's intent is clear in logs/monitoring; whether it actually comes back up depends entirely on the external process manager. |
+
+## Examples
+
+```bash
+TOKEN="your-bearer-token"
+HOST="http://127.0.0.1:8766"
+
+curl "$HOST/health"
+
+curl -H "Authorization: Bearer $TOKEN" "$HOST/api/v1/players"
+
+curl -X POST -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"message":"Server restarting in 10 minutes"}' \
+  "$HOST/api/v1/broadcast"
+
+curl -X POST -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"steamName":"SomePlayer","reason":"AFK too long"}' \
+  "$HOST/api/v1/players/kick"
+
+curl -H "Authorization: Bearer $TOKEN" "$HOST/api/v1/players/SomePlayer/tribe"
+```
+
+## Extending
+
+Add new actions in `Source/Routes.cpp` (the game-thread logic), wire the route in
+`Source/ApiRouter.cpp`, and document it above. Every `Routes::` function may throw
+`RestApiError(httpStatus, message)` for expected failures (bad input, player not found, ...).

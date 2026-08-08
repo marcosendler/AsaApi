@@ -1,0 +1,596 @@
+{
+	"info": {
+		"_postman_id": "b6f2a1d4-8e3c-4b7a-9c1d-4f5a6b7c8d9e",
+		"name": "ArkRestApi",
+		"description": "REST API exposed by the ArkRestApi AsaApi plugin. All routes except /health require a Bearer token (set the `bearerToken` collection variable).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{bearerToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://127.0.0.1:8766",
+			"type": "string"
+		},
+		{
+			"key": "bearerToken",
+			"value": "CHANGE_ME_TO_A_LONG_RANDOM_SECRET",
+			"type": "string"
+		},
+		{
+			"key": "steamName",
+			"value": "SomePlayer",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Server",
+			"item": [
+				{
+					"name": "Health",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["health"]
+						}
+					}
+				},
+				{
+					"name": "Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/status",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "status"]
+						}
+					},
+					"response": [],
+					"description": "Returns {\"status\":\"Ready\",\"onlinePlayers\":7,\"maxPlayers\":70,\"serverName\":\"...\",\"mapName\":\"TheIsland_WP\",\"pve\":true,\"dayTime\":\"Day 12, 14:32\",\"memory\":{\"workingSetMB\":8421,\"privateBytesMB\":8390}}. status is \"Loading\" until the map finishes loading - while Loading, this and every other authenticated route time out (504) since they're all queued onto the game thread."
+				},
+				{
+					"name": "Shutdown Server",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/server/shutdown",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "server", "shutdown"]
+						}
+					},
+					"response": [],
+					"description": "Calls UShooterCheatManager::DoExit(), terminating the server process. No engine-level restart happens on its own - pair with a process manager that relaunches the server if needed."
+				},
+				{
+					"name": "Restart Server",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/server/restart",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "server", "restart"]
+						}
+					},
+					"response": [],
+					"description": "Identical to Shutdown Server (both call DoExit()) - separate route so caller intent is clear in logs/monitoring."
+				}
+			]
+		},
+		{
+			"name": "World",
+			"item": [
+				{
+					"name": "Save World",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/world/save",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "world", "save"]
+						}
+					}
+				},
+				{
+					"name": "Destroy All Enemies",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/world/destroy-all-enemies",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "world", "destroy-all-enemies"]
+						}
+					},
+					"response": [],
+					"description": "Destructive, global action: destroys all wild/hostile dinos on the map."
+				},
+				{
+					"name": "Set Time Of Day",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"time\": \"1200\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/world/time",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "world", "time"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Messaging",
+			"item": [
+				{
+					"name": "Broadcast",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"message\": \"Server restarting in 10 minutes\",\n  \"alsoChat\": false\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/broadcast",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "broadcast"]
+						}
+					}
+				},
+				{
+					"name": "Message Player",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"message\": \"Hello from the REST API\",\n  \"senderName\": \"Server\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/players/message",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "players", "message"]
+						}
+					}
+				},
+				{
+					"name": "Notify Player",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"message\": \"Welcome! Register on Discord to claim your items.\",\n  \"displayScale\": 1.3,\n  \"displayTime\": 5,\n  \"colorR\": 1,\n  \"colorG\": 1,\n  \"colorB\": 1,\n  \"colorA\": 1\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/players/notify",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "players", "notify"]
+						}
+					},
+					"response": [],
+					"description": "On-screen notification (harder to miss than a chat line)."
+				}
+			]
+		},
+		{
+			"name": "Spawning",
+			"item": [
+				{
+					"name": "Spawn Dino",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"blueprint\": \"Blueprint'/Game/PrimalEarth/Dinos/Rex/Rex_Character_BP.Rex_Character_BP'\",\n  \"nearPlayer\": { \"steamName\": \"{{steamName}}\" },\n  \"level\": 30,\n  \"forceTame\": true,\n  \"neutered\": false\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spawn/dino",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "spawn", "dino"]
+						}
+					},
+					"response": [],
+					"description": "Use `x`/`y`/`z` instead of `nearPlayer` to spawn at fixed coordinates."
+				},
+				{
+					"name": "Spawn Dino As Cryopod",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"blueprint\": \"Blueprint'/Game/PrimalEarth/Dinos/Argentavis/Argent_Character_BP.Argent_Character_BP'\",\n  \"level\": 150,\n  \"forceTame\": true,\n  \"neutered\": true,\n  \"gender\": \"male\",\n  \"saddleBlueprint\": \"Blueprint'/Game/PrimalEarth/CoreBlueprints/Items/Armor/Saddles/PrimalItemArmor_ArgentavisSaddle.PrimalItemArmor_ArgentavisSaddle_C'\",\n  \"saddleQuality\": 0\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spawn/dino-cryopod",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "spawn", "dino-cryopod"]
+						}
+					},
+					"response": [],
+					"description": "Spawns the dino and immediately captures it into a cryopod delivered straight into the player's inventory. `gender` is optional (\"male\"/\"female\"). `saddleBlueprint` is strongly recommended - cryopod-ing erases the forceTame no-saddle-needed bypass, so without a real saddle equipped before capture the dino comes out with no inventory/riding access. `cryopodBlueprint` overrides the empty-cryopod item (defaults to vanilla Extinction) - required if your server runs a cryopod-replacing mod (Alfa Cryopod, Pelayori's Cryo Storage, etc.), since the vanilla class can fail to construct once such a mod has overridden the server's PrimalGameData."
+				},
+				{
+					"name": "Spawn Item",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"blueprint\": \"Blueprint'/Game/PrimalEarth/CoreBlueprints/Items/Armor/Riot/PrimalItemArmor_RiotPants.PrimalItemArmor_RiotPants_C'\",\n  \"x\": 0,\n  \"y\": 0,\n  \"z\": 0,\n  \"amount\": 1,\n  \"quality\": 0,\n  \"forceBlueprint\": false\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spawn/item",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "spawn", "item"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Players",
+			"item": [
+				{
+					"name": "List Players",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/players",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "players"]
+						}
+					}
+				},
+				{
+					"name": "Kick Player",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"reason\": \"Kicked via REST API\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/players/kick",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "players", "kick"]
+						}
+					}
+				},
+				{
+					"name": "Ban Player",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"durationMinutes\": 0\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/players/ban",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "players", "ban"]
+						}
+					},
+					"response": [],
+					"description": "durationMinutes: 0 = permanent ban."
+				},
+				{
+					"name": "Teleport To Position",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"x\": 0,\n  \"y\": 0,\n  \"z\": 0\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/players/teleport",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "players", "teleport"]
+						}
+					}
+				},
+				{
+					"name": "Teleport To Player",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"from\": { \"steamName\": \"{{steamName}}\" },\n  \"to\": { \"steamName\": \"OtherPlayer\" },\n  \"checkForDino\": true,\n  \"maxDistance\": -1\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/players/teleport-to-player",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "players", "teleport-to-player"]
+						}
+					}
+				},
+				{
+					"name": "Give Item",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"blueprint\": \"Blueprint'/Game/PrimalEarth/CoreBlueprints/Items/Armor/Riot/PrimalItemArmor_RiotPants.PrimalItemArmor_RiotPants_C'\",\n  \"quantity\": 1,\n  \"quality\": 0,\n  \"forceBlueprint\": false,\n  \"autoEquip\": false,\n  \"minRandomQuality\": 0\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/players/give-item",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "players", "give-item"]
+						}
+					},
+					"response": [],
+					"description": "Gives the item directly into the player's inventory (unlike spawn/item, which drops it on the ground)."
+				},
+				{
+					"name": "Give Items (batch)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"items\": [\n    { \"blueprint\": \"Blueprint'/Game/PrimalEarth/CoreBlueprints/Items/Armor/Metal/PrimalItemArmor_MetalShirt.PrimalItemArmor_MetalShirt_C'\", \"quantity\": 1, \"quality\": 0 },\n    { \"blueprint\": \"Blueprint'/Game/PrimalEarth/CoreBlueprints/Items/Armor/Metal/PrimalItemArmor_MetalHelmet.PrimalItemArmor_MetalHelmet_C'\", \"quantity\": 1, \"quality\": 0 },\n    { \"blueprint\": \"Blueprint'/Game/PrimalEarth/CoreBlueprints/Weapons/PrimalItem_WeaponMetalPick.PrimalItem_WeaponMetalPick_C'\", \"quantity\": 1, \"quality\": 0 }\n  ]\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/players/give-items",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "players", "give-items"]
+						}
+					},
+					"response": [],
+					"description": "Batch version of Give Item - delivers a whole kit in one call. Returns {\"results\": [...]}, one entry per item, same order; a bad blueprint in one entry doesn't stop the rest."
+				},
+				{
+					"name": "Give Engrams",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"forceAll\": true,\n  \"tekOnly\": false\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/players/give-engrams",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "players", "give-engrams"]
+						}
+					}
+				},
+				{
+					"name": "Give Experience",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"amount\": 1000,\n  \"fromTribeShare\": false,\n  \"preventSharingWithTribe\": false\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/players/give-exp",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "players", "give-exp"]
+						}
+					}
+				},
+				{
+					"name": "Set Player Level",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"level\": 100\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/players/set-level",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "players", "set-level"]
+						}
+					}
+				},
+				{
+					"name": "Clear Inventory",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"clearInventory\": true,\n  \"clearSlotItems\": true,\n  \"clearEquippedItems\": true\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/players/clear-inventory",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "players", "clear-inventory"]
+						}
+					}
+				},
+				{
+					"name": "Toggle God Mode",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"steamName\": \"{{steamName}}\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/players/god",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "players", "god"]
+						}
+					},
+					"response": [],
+					"description": "Toggle - calling this again switches God Mode back off."
+				},
+				{
+					"name": "Set Player Stats",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"steamName\": \"{{steamName}}\",\n  \"stats\": {\n    \"health\": { \"currentValue\": 500, \"maxValue\": 500 },\n    \"stamina\": { \"maxValue\": 600 },\n    \"weight\": { \"maxValue\": 1000 },\n    \"meleeDamageMultiplier\": { \"maxValue\": 300 }\n  }\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/players/set-stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "players", "set-stats"]
+						}
+					},
+					"response": [],
+					"description": "Sets one or more stats directly. Each entry accepts currentValue and/or maxValue. Valid names: health, stamina, torpidity, oxygen, food, water, temperature, weight, meleeDamageMultiplier, speedMultiplier, temperatureFortitude, craftingSpeedMultiplier."
+				},
+				{
+					"name": "Inventory Count",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/players/{{steamName}}/inventory-count?item=Metal Ingot",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "players", "{{steamName}}", "inventory-count"],
+							"query": [
+								{ "key": "item", "value": "Metal Ingot" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Inventory Count (by playerId)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/players/-/inventory-count?item=Metal Ingot&playerId=76561198012345678",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "players", "-", "inventory-count"],
+							"query": [
+								{ "key": "item", "value": "Metal Ingot" },
+								{ "key": "playerId", "value": "76561198012345678" }
+							]
+						}
+					},
+					"response": [],
+					"description": "The path segment (`-` here) is ignored once `playerId` (or `eosId`) is given as a query param - use this form to avoid ambiguity when two online players share the same name."
+				},
+				{
+					"name": "Get Tribe Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/players/{{steamName}}/tribe",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "players", "{{steamName}}", "tribe"]
+						}
+					}
+				},
+				{
+					"name": "Get Tribe Id (by eosId)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/players/-/tribe?eosId=0002a1b2c3d4e5f6",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "players", "-", "tribe"],
+							"query": [
+								{ "key": "eosId", "value": "0002a1b2c3d4e5f6" }
+							]
+						}
+					},
+					"response": [],
+					"description": "The path segment (`-` here) is ignored once `eosId` (or `playerId`) is given as a query param."
+				}
+			]
+		}
+	]
+}
